@@ -1,52 +1,210 @@
-gst-plugins-base1.0 (1.4.4-2+deb8u1) jessie-security; urgency=medium
+gst-plugins-base1.0 (1.10.4-1) unstable; urgency=medium
 
-  * debian/patches/0001-riff-media-Check-for-valid-channels-rate-before-usin.patch:
-    + The gst_riff_create_audio_caps function in
-      gst-libs/gst/riff/riff-media.c in gst-plugins-base in GStreamer before
-      1.10.3 allows remote attackers to cause a denial of service (floating
-      point exception and crash) via a crafted ASF file.
-      https://bugzilla.gnome.org/show_bug.cgi?id=777525
+  * New upstream bugfix release
 
-      Fixes CVE-2017-5837
+ -- Sebastian Dröge <slomo@debian.org>  Thu, 23 Feb 2017 15:35:02 +0200
 
-  * debian/patches/0002-riff-media-Don-t-divide-block-align-by-zero-channels.patch:
-    + The gst_riff_create_audio_caps function in
-      gst-libs/gst/riff/riff-media.c in gst-plugins-base in GStreamer before
-      1.10.3 allows remote attackers to cause a denial of service (floating
-      point exception and crash) via a crafted video file.
-      https://bugzilla.gnome.org/show_bug.cgi?id=777262
+gst-plugins-base1.0 (1.10.3-1) unstable; urgency=medium
 
-      Fixes CVE-2017-5844
+  * New upstream bugfix release
 
-  * debian/patches/0003-riff-media-Don-t-recurse-in-for-nested-WAVEFORMATEX.patch:
-    + The gst_riff_create_audio_caps function in
-      gst-libs/gst/riff/riff-media.c in gst-plugins-base in GStreamer before
-      1.10.3 does not properly limit recursion, which allows remote attackers to
-      cause a denial of service (stack overflow and crash) via vectors involving
-      nested WAVEFORMATEX.
-      https://bugzilla.gnome.org/show_bug.cgi?id=777265
+ -- Sebastian Dröge <slomo@debian.org>  Mon, 30 Jan 2017 15:32:35 +0200
 
-      Fixes CVE-2017-5839
+gst-plugins-base1.0 (1.10.2-1) unstable; urgency=medium
 
-  * debian/patches/0004-samiparse-Check-that-the-string-has-a-non-zero-lengt.patch:
-    + The html_context_handle_element function in gst/subparse/samiparse.c in
-      gst-plugins-base in GStreamer before 1.10.3 allows remote attackers to
-      cause a denial of service (out-of-bounds write) via a crafted SMI file, as
-      demonstrated by OneNote_Manager.smi.
-      https://bugzilla.gnome.org/show_bug.cgi?id=777502
+  * New upstream bugfix release
 
-      Fixes CVE-2017-5842
+ -- Sebastian Dröge <slomo@debian.org>  Tue, 29 Nov 2016 15:38:35 +0200
 
-  * debian/patches/0005-typefind-bounds-check-windows-ico-detection.patch:
-    + The windows_icon_typefind function in gst-plugins-base in GStreamer
-      before 1.10.2, when G_SLICE is set to always-malloc, allows remote
-      attackers to cause a denial of service (out-of-bounds read) via a crafted
-      ico file.
-      https://bugzilla.gnome.org/show_bug.cgi?id=774902
+gst-plugins-base1.0 (1.10.1-1) unstable; urgency=medium
 
-      Fixes CVE-2016-9811
+  * New upstream bugfix release
 
- -- Sebastian Dröge <slomo@debian.org>  Sat, 25 Mar 2017 14:15:56 +0200
+ -- Sebastian Dröge <slomo@debian.org>  Thu, 17 Nov 2016 14:56:14 +0200
+
+gst-plugins-base1.0 (1.10.0-1) unstable; urgency=medium
+
+  [ Helmut Grohne ]
+  * Mark gstreamer1.0-doc Multi-Arch: foreign (Closes: #842526).
+
+  [ Sebastian Dröge ]
+  * New upstream stable release.
+
+ -- Sebastian Dröge <slomo@debian.org>  Tue, 01 Nov 2016 17:45:24 +0200
+
+gst-plugins-base1.0 (1.9.90-1) experimental; urgency=medium
+
+  * New upstream unstable release:
+    + debian/build-deps.in,
+      debian/rules:
+      - Build-depend on GStreamer >= 1.9.90.
+    + debian/libgstreamer-plugins-base.symbols:
+      - Update new symbols.
+
+ -- Sebastian Dröge <slomo@debian.org>  Fri, 30 Sep 2016 12:16:56 +0300
+
+gst-plugins-base1.0 (1.9.2-1) experimental; urgency=medium
+
+  * New upstream unstable release:
+    + debian/build-deps.in,
+      debian/rules:
+      - Build-depend on GStreamer >= 1.9.2.
+    + debian/libgstreamer-plugins-base.symbols:
+      - Update new symbols.
+
+ -- Sebastian Dröge <slomo@debian.org>  Thu, 01 Sep 2016 11:53:46 +0300
+
+gst-plugins-base1.0 (1.9.1-1) experimental; urgency=medium
+
+  * New upstream unstable release:
+    + debian/build-deps.in,
+      debian/rules:
+      - Build-depend on GStreamer >= 1.9.1.
+    + debian/libgstreamer-plugins-base.symbols:
+      - Update new symbols.
+
+ -- Sebastian Dröge <slomo@debian.org>  Wed, 06 Jul 2016 12:22:14 +0300
+
+gst-plugins-base1.0 (1.8.2-1) unstable; urgency=medium
+
+  * debian/control.in:
+    + Remove duplicated field name.
+  * New upstream bugfix release.
+
+ -- Sebastian Dröge <slomo@debian.org>  Fri, 13 May 2016 14:37:29 +0300
+
+gst-plugins-base1.0 (1.8.1-1) unstable; urgency=medium
+
+  * New upstream bugfix release.
+
+ -- Sebastian Dröge <slomo@debian.org>  Wed, 20 Apr 2016 18:05:56 +0300
+
+gst-plugins-base1.0 (1.8.0-1) unstable; urgency=medium
+
+  * New upstream stable release:
+    + debian/build-deps.in,
+      debian/rules:
+      - Build-depend on GStreamer >= 1.8.0.
+
+ -- Sebastian Dröge <slomo@debian.org>  Thu, 24 Mar 2016 12:16:44 +0200
+
+gst-plugins-base1.0 (1.7.91-1) experimental; urgency=medium
+
+  * New upstream release candidate:
+    + debian/build-deps.in,
+      debian/rules:
+      - Build-depend on GStreamer >= 1.7.91.
+    + debian/libgstreamer-plugins-base.symbols:
+      - Update new symbols.
+
+ -- Sebastian Dröge <slomo@debian.org>  Tue, 15 Mar 2016 12:00:12 +0200
+
+gst-plugins-base1.0 (1.7.90-1) experimental; urgency=medium
+
+  * New upstream release candidate:
+    + debian/build-deps.in,
+      debian/rules:
+      - Build-depend on GStreamer >= 1.7.90.
+    + debian/build-deps.in,
+      debian/control.in,
+      debian/gstreamer-plugins-base.install:
+      - Add Opus plugin and add Breaks/Replaces for gst-plugins-bad.
+
+ -- Sebastian Dröge <slomo@debian.org>  Tue, 01 Mar 2016 17:03:06 +0200
+
+gst-plugins-base1.0 (1.7.2-1) experimental; urgency=medium
+
+  * New upstream unstable release:
+    + debian/build-deps.in,
+      debian/rules:
+      - Build-depend on GStreamer >= 1.7.2.
+    + debian/libgstreamer-plugins-base.symbols:
+      - Update for new symbols.
+    + debian/control.in:
+      - Add Breaks for gstreamer1.0-plugins-bad << 1.7.1 because
+        of GstAudioVisualizer moved from a plugin to a library here.
+
+ -- Sebastian Dröge <slomo@debian.org>  Fri, 19 Feb 2016 11:07:18 +0200
+
+gst-plugins-base1.0 (1.7.1-1) experimental; urgency=medium
+
+  * New upstream unstable release:
+    + debian/build-deps.in,
+      debian/rules:
+      - Build-depend on GLib >= 2.40 and GStreamer >= 1.7.1.
+    + debian/libgstreamer-plugins-base.symbols:
+      - Update for new symbols.
+
+ -- Sebastian Dröge <slomo@debian.org>  Thu, 24 Dec 2015 13:52:30 +0100
+
+gst-plugins-base1.0 (1.6.2-1) unstable; urgency=medium
+
+  * New upstream bugfix release.
+
+ -- Sebastian Dröge <slomo@debian.org>  Mon, 14 Dec 2015 19:24:29 +0100
+
+gst-plugins-base1.0 (1.6.1-1) unstable; urgency=medium
+
+  * debian/control.in:
+    + Remove Recommends on alsa-base, it's a useless dummy package
+      and not needed anyway (Closes: #785268).
+  * New upstream bugfix release.
+
+ -- Sebastian Dröge <slomo@debian.org>  Sat, 03 Oct 2015 19:03:14 +0100
+
+gst-plugins-base1.0 (1.6.0-1) unstable; urgency=medium
+
+  * debian/control.in:
+    + Remove Recommends on gstreamer-codec-install | gnome-codec-install.
+  * New upstream stable release.
+
+ -- Sebastian Dröge <slomo@debian.org>  Fri, 18 Sep 2015 20:54:02 +0200
+
+gst-plugins-base1.0 (1.5.91-1) experimental; urgency=medium
+
+  * New upstream release candidate.
+
+ -- Sebastian Dröge <slomo@debian.org>  Fri, 18 Sep 2015 19:20:16 +0200
+
+gst-plugins-base1.0 (1.5.90-1) experimental; urgency=medium
+
+  [ Iain Lane ]
+  * debian/watch: Update for current upstream URL scheme
+
+  [ Sebastian Dröge ]
+  * New upstream release candidate.
+
+ -- Sebastian Dröge <slomo@debian.org>  Wed, 19 Aug 2015 13:05:44 +0300
+
+gst-plugins-base1.0 (1.5.2-1) experimental; urgency=medium
+
+  * New unstable upstream release.
+
+ -- Sebastian Dröge <slomo@debian.org>  Wed, 24 Jun 2015 22:53:04 +0200
+
+gst-plugins-base1.0 (1.5.1-1) experimental; urgency=medium
+
+  * New unstable upstream release.
+
+ -- Sebastian Dröge <slomo@debian.org>  Sun, 07 Jun 2015 10:20:35 +0200
+
+gst-plugins-base1.0 (1.5.0.1+git20150513-1) experimental; urgency=medium
+
+  * New upstream GIT snapshot.
+
+ -- Sebastian Dröge <slomo@debian.org>  Wed, 13 May 2015 13:22:51 +0300
+
+gst-plugins-base1.0 (1.5.0.1+git20150316-1) experimental; urgency=medium
+
+  * New upstream GIT snapshot.
+
+ -- Sebastian Dröge <slomo@debian.org>  Mon, 16 Mar 2015 19:33:40 +0100
+
+gst-plugins-base1.0 (1.4.5-1) experimental; urgency=medium
+
+  * New upstream bugfix release.
+
+ -- Sebastian Dröge <slomo@debian.org>  Thu, 18 Dec 2014 12:23:12 +0100
 
 gst-plugins-base1.0 (1.4.4-2) unstable; urgency=medium
 

@@ -24,13 +24,13 @@
  * SECTION:element-alsasink
  * @see_also: alsasrc
  *
- * This element renders raw audio samples using the ALSA api.
+ * This element renders audio samples using the ALSA audio API.
  *
  * <refsect2>
  * <title>Example pipelines</title>
  * |[
- * gst-launch -v filesrc location=sine.ogg ! oggdemux ! vorbisdec ! audioconvert ! audioresample ! alsasink
- * ]| Play an Ogg/Vorbis file.
+ * gst-launch-1.0 -v uridecodebin uri=file:///path/to/audio.ogg ! audioconvert ! audioresample ! autoaudiosink
+ * ]| Play an Ogg/Vorbis file and output audio via ALSA.
  * </refsect2>
  */
 
@@ -51,6 +51,10 @@
 
 #include <gst/audio/gstaudioiec61937.h>
 #include <gst/gst-i18n-plugin.h>
+
+#ifndef ESTRPIPE
+#define ESTRPIPE EPIPE
+#endif
 
 #define DEFAULT_DEVICE		"default"
 #define DEFAULT_DEVICE_NAME	""
@@ -162,8 +166,8 @@ gst_alsasink_class_init (GstAlsaSinkClass * klass)
       "Audio sink (ALSA)", "Sink/Audio",
       "Output to a sound card via ALSA", "Wim Taymans <wim@fluendo.com>");
 
-  gst_element_class_add_pad_template (gstelement_class,
-      gst_static_pad_template_get (&alsasink_sink_factory));
+  gst_element_class_add_static_pad_template (gstelement_class,
+      &alsasink_sink_factory);
 
   gstbasesink_class->get_caps = GST_DEBUG_FUNCPTR (gst_alsasink_getcaps);
   gstbasesink_class->query = GST_DEBUG_FUNCPTR (gst_alsasink_query);
@@ -905,16 +909,8 @@ gst_alsasink_prepare (GstAudioSink * asink, GstAudioRingBufferSpec * spec)
   }
 
 #ifdef SND_CHMAP_API_VERSION
-  if (spec->type == GST_AUDIO_RING_BUFFER_FORMAT_TYPE_RAW && alsa->channels < 9) {
-    snd_pcm_chmap_t *chmap = snd_pcm_get_chmap (alsa->handle);
-    if (chmap && chmap->channels == alsa->channels) {
-      GstAudioChannelPosition pos[8];
-      if (alsa_chmap_to_channel_positions (chmap, pos))
-        gst_audio_ring_buffer_set_channel_positions (GST_AUDIO_BASE_SINK
-            (alsa)->ringbuffer, pos);
-    }
-    free (chmap);
-  }
+  alsa_detect_channels_mapping (GST_OBJECT (alsa), alsa->handle, spec,
+      alsa->channels, GST_AUDIO_BASE_SINK (alsa)->ringbuffer);
 #endif /* SND_CHMAP_API_VERSION */
 
   return TRUE;
@@ -982,7 +978,7 @@ gst_alsasink_close (GstAudioSink * asink)
 static gint
 xrun_recovery (GstAlsaSink * alsa, snd_pcm_t * handle, gint err)
 {
-  GST_DEBUG_OBJECT (alsa, "xrun recovery %d: %s", err, g_strerror (-err));
+  GST_WARNING_OBJECT (alsa, "xrun recovery %d: %s", err, g_strerror (-err));
 
   if (err == -EPIPE) {          /* under-run */
     err = snd_pcm_prepare (handle);
@@ -990,6 +986,7 @@ xrun_recovery (GstAlsaSink * alsa, snd_pcm_t * handle, gint err)
       GST_WARNING_OBJECT (alsa,
           "Can't recover from underrun, prepare failed: %s",
           snd_strerror (err));
+    gst_audio_base_sink_report_device_failure (GST_AUDIO_BASE_SINK (alsa));
     return 0;
   } else if (err == -ESTRPIPE) {
     while ((err = snd_pcm_resume (handle)) == -EAGAIN)
@@ -1002,6 +999,8 @@ xrun_recovery (GstAlsaSink * alsa, snd_pcm_t * handle, gint err)
             "Can't recover from suspend, prepare failed: %s",
             snd_strerror (err));
     }
+    if (err == 0)
+      gst_audio_base_sink_report_device_failure (GST_AUDIO_BASE_SINK (alsa));
     return 0;
   }
   return err;
@@ -1013,16 +1012,17 @@ gst_alsasink_write (GstAudioSink * asink, gpointer data, guint length)
   GstAlsaSink *alsa;
   gint err;
   gint cptr;
-  gint16 *ptr = data;
+  guint8 *ptr = data;
 
   alsa = GST_ALSA_SINK (asink);
 
   if (alsa->iec958 && alsa->need_swap) {
     guint i;
+    guint16 *ptr_tmp = (guint16 *) ptr;
 
     GST_DEBUG_OBJECT (asink, "swapping bytes");
     for (i = 0; i < length / 2; i++) {
-      ptr[i] = GUINT16_SWAP_LE_BE (ptr[i]);
+      ptr_tmp[i] = GUINT16_SWAP_LE_BE (ptr_tmp[i]);
     }
   }
 

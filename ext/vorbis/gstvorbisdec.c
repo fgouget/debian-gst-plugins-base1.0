@@ -24,12 +24,14 @@
  * This element decodes a Vorbis stream to raw float audio.
  * <ulink url="http://www.vorbis.com/">Vorbis</ulink> is a royalty-free
  * audio codec maintained by the <ulink url="http://www.xiph.org/">Xiph.org
- * Foundation</ulink>.
+ * Foundation</ulink>. As it outputs raw float audio you will often need to
+ * put an audioconvert element after it.
+ *
  *
  * <refsect2>
  * <title>Example pipelines</title>
  * |[
- * gst-launch -v filesrc location=sine.ogg ! oggdemux ! vorbisdec ! audioconvert ! alsasink
+ * gst-launch-1.0 -v filesrc location=sine.ogg ! oggdemux ! vorbisdec ! audioconvert ! audioresample ! autoaudiosink
  * ]| Decode an Ogg/Vorbis. To create an Ogg/Vorbis file refer to the documentation of vorbisenc.
  * </refsect2>
  */
@@ -76,22 +78,21 @@ static gboolean vorbis_dec_stop (GstAudioDecoder * dec);
 static GstFlowReturn vorbis_dec_handle_frame (GstAudioDecoder * dec,
     GstBuffer * buffer);
 static void vorbis_dec_flush (GstAudioDecoder * dec, gboolean hard);
+static gboolean vorbis_dec_set_format (GstAudioDecoder * dec, GstCaps * caps);
 
 static void
 gst_vorbis_dec_class_init (GstVorbisDecClass * klass)
 {
-  GstPadTemplate *src_template, *sink_template;
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
   GstElementClass *element_class = GST_ELEMENT_CLASS (klass);
   GstAudioDecoderClass *base_class = GST_AUDIO_DECODER_CLASS (klass);
 
   gobject_class->finalize = vorbis_dec_finalize;
 
-  src_template = gst_static_pad_template_get (&vorbis_dec_src_factory);
-  gst_element_class_add_pad_template (element_class, src_template);
-
-  sink_template = gst_static_pad_template_get (&vorbis_dec_sink_factory);
-  gst_element_class_add_pad_template (element_class, sink_template);
+  gst_element_class_add_static_pad_template (element_class,
+      &vorbis_dec_src_factory);
+  gst_element_class_add_static_pad_template (element_class,
+      &vorbis_dec_sink_factory);
 
   gst_element_class_set_static_metadata (element_class,
       "Vorbis audio decoder", "Codec/Decoder/Audio",
@@ -100,6 +101,7 @@ gst_vorbis_dec_class_init (GstVorbisDecClass * klass)
 
   base_class->start = GST_DEBUG_FUNCPTR (vorbis_dec_start);
   base_class->stop = GST_DEBUG_FUNCPTR (vorbis_dec_stop);
+  base_class->set_format = GST_DEBUG_FUNCPTR (vorbis_dec_set_format);
   base_class->handle_frame = GST_DEBUG_FUNCPTR (vorbis_dec_handle_frame);
   base_class->flush = GST_DEBUG_FUNCPTR (vorbis_dec_flush);
 }
@@ -107,6 +109,9 @@ gst_vorbis_dec_class_init (GstVorbisDecClass * klass)
 static void
 gst_vorbis_dec_init (GstVorbisDec * dec)
 {
+  gst_audio_decoder_set_use_default_pad_acceptcaps (GST_AUDIO_DECODER_CAST
+      (dec), TRUE);
+  GST_PAD_SET_ACCEPT_TEMPLATE (GST_AUDIO_DECODER_SINK_PAD (dec));
 }
 
 static void
@@ -270,7 +275,7 @@ vorbis_handle_type_packet (GstVorbisDec * vd)
 {
   gint res;
 
-  g_assert (vd->initialized == FALSE);
+  g_assert (!vd->initialized);
 
 #ifdef USE_TREMOLO
   if (G_UNLIKELY ((res = vorbis_dsp_init (&vd->vd, &vd->vi))))
@@ -626,4 +631,31 @@ vorbis_dec_flush (GstAudioDecoder * dec, gboolean hard)
 
   vorbis_synthesis_restart (&vd->vd);
 #endif
+}
+
+static gboolean
+vorbis_dec_set_format (GstAudioDecoder * dec, GstCaps * caps)
+{
+  GstVorbisDec *vd = GST_VORBIS_DEC (dec);
+
+  GST_DEBUG_OBJECT (vd, "New caps %" GST_PTR_FORMAT " - resetting", caps);
+
+  /* A set_format call implies new data with new header packets */
+  if (!vd->initialized)
+    return TRUE;
+
+  vd->initialized = FALSE;
+#ifndef USE_TREMOLO
+  vorbis_block_clear (&vd->vb);
+#endif
+  vorbis_dsp_clear (&vd->vd);
+
+  /* We need to free and re-init these,
+   * or libvorbis chokes */
+  vorbis_comment_clear (&vd->vc);
+  vorbis_info_clear (&vd->vi);
+  vorbis_info_init (&vd->vi);
+  vorbis_comment_init (&vd->vc);
+
+  return TRUE;
 }

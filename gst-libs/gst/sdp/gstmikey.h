@@ -150,14 +150,14 @@ GType gst_mikey_payload_get_type(void);
  * GstMIKEYPayload:
  * @type: the payload type
  * @len: length of the payload
- * @clear_func: function to clear the payload
- * @copy_func: function to copy the payload
  *
  * Hold the common fields for all payloads
  */
 struct _GstMIKEYPayload {
+  /* < private > */
   GstMiniObject mini_object;
 
+  /* < public > */
   GstMIKEYPayloadType type;
   guint len;
 };
@@ -174,10 +174,6 @@ GstMIKEYPayload *   gst_mikey_payload_new      (GstMIKEYPayloadType type);
  *
  * Since: 1.4
  */
-#ifdef _FOOL_GTK_DOC_
-G_INLINE_FUNC GstMIKEYPayload * gst_mikey_payload_ref (GstMIKEYPayload * payload);
-#endif
-
 static inline GstMIKEYPayload *
 gst_mikey_payload_ref (GstMIKEYPayload * payload)
 {
@@ -192,10 +188,6 @@ gst_mikey_payload_ref (GstMIKEYPayload * payload)
  *
  * Since: 1.4
  */
-#ifdef _FOOL_GTK_DOC_
-G_INLINE_FUNC void gst_mikey_payload_unref (GstMIKEYPayload * payload);
-#endif
-
 static inline void
 gst_mikey_payload_unref (GstMIKEYPayload * payload)
 {
@@ -212,10 +204,6 @@ gst_mikey_payload_unref (GstMIKEYPayload * payload)
  *
  * Since: 1.4
  */
-#ifdef _FOOL_GTK_DOC_
-G_INLINE_FUNC GstMIKEYPayload * gst_mikey_payload_copy (const GstMIKEYPayload * buf);
-#endif
-
 static inline GstMIKEYPayload *
 gst_mikey_payload_copy (const GstMIKEYPayload * payload)
 {
@@ -255,7 +243,7 @@ typedef enum
  * @pt: the common #GstMIKEYPayload
  * @enc_alg: the #GstMIKEYEncAlg
  * @mac_alg: the #GstMIKEYMacAlg
- * @subpayload: the subpayloads
+ * @subpayloads: the subpayloads
  *
  * A structure holding the KEMAC payload
  */
@@ -537,8 +525,10 @@ gboolean   gst_mikey_payload_key_data_set_interval (GstMIKEYPayload *payload,
  */
 struct _GstMIKEYMessage
 {
+  /* < private > */
   GstMiniObject mini_object;
 
+  /* < public > */
   guint8 version;
   GstMIKEYType type;
   gboolean V;
@@ -557,6 +547,10 @@ GstMIKEYMessage *           gst_mikey_message_new_from_bytes    (GBytes *bytes, 
                                                                  GError **error);
 GBytes *                    gst_mikey_message_to_bytes          (GstMIKEYMessage *msg, GstMIKEYEncryptInfo *info,
                                                                  GError **error);
+GstMIKEYMessage *           gst_mikey_message_new_from_caps     (GstCaps *caps);
+gboolean                    gst_mikey_message_to_caps           (const GstMIKEYMessage *msg, GstCaps *caps);
+gchar *                     gst_mikey_message_base64_encode     (GstMIKEYMessage* msg);
+
 /**
  * gst_mikey_message_ref:
  * @message: The message to refcount
@@ -567,10 +561,6 @@ GBytes *                    gst_mikey_message_to_bytes          (GstMIKEYMessage
  *
  * Since: 1.4
  */
-#ifdef _FOOL_GTK_DOC_
-G_INLINE_FUNC GstMIKEYMessage * gst_mikey_message_ref (GstMIKEYMessage * message);
-#endif
-
 static inline GstMIKEYMessage *
 gst_mikey_message_ref (GstMIKEYMessage * message)
 {
@@ -585,10 +575,6 @@ gst_mikey_message_ref (GstMIKEYMessage * message)
  *
  * Since: 1.4
  */
-#ifdef _FOOL_GTK_DOC_
-G_INLINE_FUNC void gst_mikey_message_unref (GstMIKEYMessage * message);
-#endif
-
 static inline void
 gst_mikey_message_unref (GstMIKEYMessage * message)
 {
@@ -605,10 +591,6 @@ gst_mikey_message_unref (GstMIKEYMessage * message)
  *
  * Since: 1.4
  */
-#ifdef _FOOL_GTK_DOC_
-G_INLINE_FUNC GstMIKEYMessage * gst_mikey_message_copy (const GstMIKEYMessage * buf);
-#endif
-
 static inline GstMIKEYMessage *
 gst_mikey_message_copy (const GstMIKEYMessage * message)
 {
@@ -673,7 +655,14 @@ gboolean                    gst_mikey_message_add_rand_len      (GstMIKEYMessage
 /* General Extension Payload */
 
 
+#ifdef G_DEFINE_AUTOPTR_CLEANUP_FUNC
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(GstMIKEYMessage, gst_mikey_message_unref)
+#endif
+
+#ifdef G_DEFINE_AUTOPTR_CLEANUP_FUNC
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(GstMIKEYPayload, gst_mikey_payload_unref)
+#endif
+
 G_END_DECLS
 
 #endif /* __GST_MIKEY_H__ */
-

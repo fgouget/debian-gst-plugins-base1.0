@@ -32,6 +32,7 @@ Description: GStreamer helper programs from the "base" set
 
 Package: @GST_PKGNAME@-plugins-base-doc
 Architecture: all
+Multi-Arch: foreign
 Section: doc
 Depends: ${misc:Depends},
          libglib2.0-doc,
@@ -55,10 +56,10 @@ Pre-Depends: ${misc:Pre-Depends}
 Depends: ${misc:Depends},
          ${shlibs:Depends},
          iso-codes
-Breaks: totem-gstreamer (<= 2.17.92-0ubuntu1)
+Breaks: totem-gstreamer (<= 2.17.92-0ubuntu1),
+        gstreamer1.0-plugins-bad (<< 1.7.1)
 Recommends: @GST_PKGNAME@-plugins-base
-Suggests: libvisual-0.4-plugins,
-          gstreamer-codec-install | gnome-codec-install
+Suggests: libvisual-0.4-plugins
 Description: GStreamer libraries from the "base" set
  GStreamer is a streaming media framework, based on graphs of filters
  which operate on media data.  Applications using this library can do
@@ -100,7 +101,6 @@ Section: libs
 Depends: ${misc:Depends},
          ${shlibs:Depends},
          @GST_PLUGINS_BASE_LIB@ (>= @GST_VERSION@)
-Recommends: alsa-base (>= 0.9.0)
 Suggests: alsa-utils (>= 0.9.0)
 XB-GStreamer-Version: ${gstreamer:Version}
 XB-GStreamer-Elements: ${gstreamer:Elements}
@@ -127,6 +127,8 @@ Section: libs
 Depends: ${misc:Depends},
          ${shlibs:Depends},
          @GST_PLUGINS_BASE_LIB@ (>= @GST_VERSION@)
+Breaks: gstreamer1.0-plugins-bad (<< 1.7.90)
+Replaces: gstreamer1.0-plugins-bad (<< 1.7.90)
 Suggests: gvfs
 XB-GStreamer-Version: ${gstreamer:Version}
 XB-GStreamer-Elements: ${gstreamer:Elements}
@@ -156,6 +158,8 @@ Depends: @GST_PKGNAME@-alsa (= ${binary:Version}) [linux-any],
          @GST_PKGNAME@-x (= ${binary:Version}),
          @GST_PLUGINS_BASE_LIB@ (= ${binary:Version}),
          ${misc:Depends}
+Breaks: gstreamer1.0-plugins-bad-dbg (<< 1.7.90)
+Replaces: gstreamer1.0-plugins-bad-dbg (<< 1.7.90)
 Description: GStreamer plugins from the "base" set
  GStreamer is a streaming media framework, based on graphs of filters
  which operate on media data.  Applications using this library can do
@@ -201,7 +205,7 @@ Architecture: any
 Depends: ${gir:Depends},
          ${shlibs:Depends},
          ${misc:Depends}
-Description: Description: GObject introspection data for the GStreamer Plugins Base library
+Description: GObject introspection data for the GStreamer Plugins Base library
  This package contains introspection data for the GStreamer Plugins Base library.
  .
  GStreamer is a streaming media framework, based on graphs of filters

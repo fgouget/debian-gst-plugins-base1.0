@@ -1,5 +1,0 @@
-0001-riff-media-Check-for-valid-channels-rate-before-usin.patch
-0002-riff-media-Don-t-divide-block-align-by-zero-channels.patch
-0003-riff-media-Don-t-recurse-in-for-nested-WAVEFORMATEX.patch
-0004-samiparse-Check-that-the-string-has-a-non-zero-lengt.patch
-0005-typefind-bounds-check-windows-ico-detection.patch
