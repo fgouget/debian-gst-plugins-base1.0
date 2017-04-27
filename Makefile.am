@@ -32,9 +32,18 @@ DIST_SUBDIRS = 			\
 include $(top_srcdir)/common/win32.mak
 
 EXTRA_DIST = \
-	gst-plugins-base.spec depcomp \
+	depcomp \
 	AUTHORS COPYING COPYING.LIB NEWS README RELEASE REQUIREMENTS \
-	ChangeLog gst-plugins-base.doap autogen.sh $(win32)
+	ChangeLog gst-plugins-base.doap autogen.sh $(win32) \
+	$(shell find "$(top_srcdir)" -type f -name meson.build ! -path "$(top_srcdir)/$(PACKAGE_TARNAME)-*" ) \
+	gst-libs/gst/audio/audio_mkenum.py \
+	gst-libs/gst/app/app_mkenum.py \
+	gst-libs/gst/pbutils/pbutils_mkenum.py \
+	gst-libs/gst/rtp/rtp_mkenum.py \
+	gst-libs/gst/rtsp/rtsp_mkenum.py \
+	gst-libs/gst/tag/tag_mkenum.py \
+	gst-libs/gst/video/video_mkenum.py \
+	meson_options.txt config.h.meson
 
 DISTCLEANFILES = _stdint.h
 
@@ -58,19 +67,6 @@ build-checks:
 	true
 endif
 
-WIN32_COPY = \
-	$(top_builddir)/gst-libs/gst/*/*-enumtypes.[ch] \
-	$(top_builddir)/_stdint.h
-
-win32-update:
-	for f in $(WIN32_COPY); do cp -v $$f win32/common; done; \
-	for f in win32/common/*-enumtypes.c; do \
-	  echo "Indenting $$f"; \
-	  gst-indent $$f; gst-indent $$f; \
-	done
-	cp -v $(top_builddir)/win32/common/config.h-new \
-	    $(top_srcdir)/win32/common/config.h
-
 include $(top_srcdir)/common/coverage/lcov.mak
 
 check: check-exports
@@ -78,11 +74,14 @@ check: check-exports
 # cruft: plugins that have been merged or moved or renamed
 
 CRUFT_FILES = \
+	$(top_builddir)/gst-plugins-base.spec \
+	$(top_builddir)/win32/common/config.h-new \
 	$(top_builddir)/common/shave \
 	$(top_builddir)/common/shave-libtool \
 	$(top_builddir)/gst-libs/gst/audio/testchannels \
-        $(top_builddir)/gst-libs/gst/app/gstapp-marshal.c \
-        $(top_builddir)/gst-libs/gst/app/gstapp-marshal.h \
+	$(top_builddir)/gst-libs/gst/app/gstapp-marshal.c \
+	$(top_builddir)/gst-libs/gst/app/gstapp-marshal.h \
+	$(top_builddir)/gst/encoding/.libs/libgstencodebin.so \
 	$(top_builddir)/tests/check/elements/gdppay \
 	$(top_builddir)/tests/check/elements/gdpdepay \
 	$(top_builddir)/tests/check/pipelines/streamheader \
@@ -91,6 +90,7 @@ CRUFT_FILES = \
 	$(top_builddir)/tools/gst-discoverer
 
 CRUFT_DIRS = \
+	$(top_srcdir)/docs/design \
 	$(top_srcdir)/docs/plugins/tmpl \
 	$(top_srcdir)/ext/gio \
 	$(top_srcdir)/gst/gdp \

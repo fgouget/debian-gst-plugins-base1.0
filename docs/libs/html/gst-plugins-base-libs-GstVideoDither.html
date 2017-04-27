@@ -6,8 +6,8 @@
 <meta name="generator" content="DocBook XSL Stylesheets V1.79.1">
 <link rel="home" href="index.html" title="GStreamer Base Plugins 1.0 Library Reference Manual">
 <link rel="up" href="gstreamer-video.html" title="Video Library">
-<link rel="prev" href="gst-plugins-base-libs-gstvideofilter.html" title="gstvideofilter">
-<link rel="next" href="gst-plugins-base-libs-GstVideoChroma.html" title="GstVideoChroma">
+<link rel="prev" href="GstVideoFilter.html" title="GstVideoFilter">
+<link rel="next" href="gst-plugins-base-libs-GstVideoChroma.html" title="GstVideoChromaResample">
 <meta name="generator" content="GTK-Doc V1.25 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
@@ -19,7 +19,7 @@
 </td>
 <td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
 <td><a accesskey="u" href="gstreamer-video.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
-<td><a accesskey="p" href="gst-plugins-base-libs-gstvideofilter.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="p" href="GstVideoFilter.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
 <td><a accesskey="n" href="gst-plugins-base-libs-GstVideoChroma.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
 </tr></table>
 <div class="refentry">
@@ -184,7 +184,7 @@ gst_video_dither_line (<em class="parameter"><code><a class="link" href="gst-plu
 <pre class="programlisting"><a class="link" href="gst-plugins-base-libs-GstVideoDither.html#GstVideoDither" title="GstVideoDither"><span class="returnvalue">GstVideoDither</span></a> *
 gst_video_dither_new (<em class="parameter"><code><a class="link" href="gst-plugins-base-libs-GstVideoDither.html#GstVideoDitherMethod" title="enum GstVideoDitherMethod"><span class="type">GstVideoDitherMethod</span></a> method</code></em>,
                       <em class="parameter"><code><a class="link" href="gst-plugins-base-libs-GstVideoDither.html#GstVideoDitherFlags" title="enum GstVideoDitherFlags"><span class="type">GstVideoDitherFlags</span></a> flags</code></em>,
-                      <em class="parameter"><code><a class="link" href="gst-plugins-base-libs-gstvideo.html#GstVideoFormat" title="enum GstVideoFormat"><span class="type">GstVideoFormat</span></a> format</code></em>,
+                      <em class="parameter"><code><a class="link" href="gst-plugins-base-libs-GstVideoAlignment.html#GstVideoFormat" title="enum GstVideoFormat"><span class="type">GstVideoFormat</span></a> format</code></em>,
                       <em class="parameter"><code><a href="/usr/share/gtk-doc/html/glibglib-Basic-Types.html#guint"><span class="type">guint</span></a> quantizer[GST_VIDEO_MAX_COMPONENTS]</code></em>,
                       <em class="parameter"><code><a href="/usr/share/gtk-doc/html/glibglib-Basic-Types.html#guint"><span class="type">guint</span></a> width</code></em>);</pre>
 <p>Make a new dither object for dithering lines of <em class="parameter"><code>format</code></em>
@@ -219,7 +219,7 @@ performance is achived when <em class="parameter"><code>quantizer</code></em>
 </tr>
 <tr>
 <td class="parameter_name"><p>format</p></td>
-<td class="parameter_description"><p>a <a class="link" href="gst-plugins-base-libs-gstvideo.html#GstVideoFormat" title="enum GstVideoFormat"><span class="type">GstVideoFormat</span></a></p></td>
+<td class="parameter_description"><p>a <a class="link" href="gst-plugins-base-libs-GstVideoAlignment.html#GstVideoFormat" title="enum GstVideoFormat"><span class="type">GstVideoFormat</span></a></p></td>
 <td class="parameter_annotations"> </td>
 </tr>
 <tr>

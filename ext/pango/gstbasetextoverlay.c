@@ -923,12 +923,16 @@ gst_base_text_overlay_negotiate (GstBaseTextOverlay * overlay, GstCaps * caps)
   gst_caps_unref (overlay_caps);
   gst_caps_unref (caps);
 
+  if (!ret)
+    gst_pad_mark_reconfigure (overlay->srcpad);
+
   return ret;
 
 no_format:
   {
     if (caps)
       gst_caps_unref (caps);
+    gst_pad_mark_reconfigure (overlay->srcpad);
     return FALSE;
   }
 }
@@ -1634,8 +1638,9 @@ gst_base_text_overlay_set_composition (GstBaseTextOverlay * overlay)
       guint num_overlays =
           gst_video_overlay_composition_n_rectangles
           (overlay->upstream_composition);
+      guint i;
 
-      for (guint i = 0; i < num_overlays; i++) {
+      for (i = 0; i < num_overlays; i++) {
         GstVideoOverlayRectangle *rectangle;
         rectangle =
             gst_video_overlay_composition_get_rectangle
@@ -2158,6 +2163,7 @@ gst_base_text_overlay_shade_background (GstBaseTextOverlay * overlay,
       break;
     case GST_VIDEO_FORMAT_AYUV:
     case GST_VIDEO_FORMAT_UYVY:
+    case GST_VIDEO_FORMAT_VYUY:
     case GST_VIDEO_FORMAT_YUY2:
     case GST_VIDEO_FORMAT_v308:
     case GST_VIDEO_FORMAT_IYU2:
@@ -2210,8 +2216,16 @@ gst_base_text_overlay_push_frame (GstBaseTextOverlay * overlay,
   if (overlay->composition == NULL)
     goto done;
 
-  if (gst_pad_check_reconfigure (overlay->srcpad))
-    gst_base_text_overlay_negotiate (overlay, NULL);
+  if (gst_pad_check_reconfigure (overlay->srcpad)) {
+    if (!gst_base_text_overlay_negotiate (overlay, NULL)) {
+      gst_pad_mark_reconfigure (overlay->srcpad);
+      gst_buffer_unref (video_frame);
+      if (GST_PAD_IS_FLUSHING (overlay->srcpad))
+        return GST_FLOW_FLUSHING;
+      else
+        return GST_FLOW_NOT_NEGOTIATED;
+    }
+  }
 
   video_frame = gst_buffer_make_writable (video_frame);
 

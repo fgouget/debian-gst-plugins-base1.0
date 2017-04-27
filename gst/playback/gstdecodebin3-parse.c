@@ -56,9 +56,6 @@ struct _DecodebinInputStream
   /* Whether we saw an EOS on input. This should be treated accordingly
    * when the stream is no longer used */
   gboolean saw_eos;
-  /* TRUE if the EOS being pushed is only for draining and does not represent
-   * the full media EOS */
-  gboolean drain_eos;
 };
 
 static void parsebin_pad_added_cb (GstElement * demux, GstPad * pad,
@@ -209,7 +206,13 @@ parse_chain_output_probe (GstPad * pad, GstPadProbeInfo * info,
       {
         GstStream *stream = NULL;
         guint group_id = G_MAXUINT32;
-        gst_event_parse_group_id (ev, &group_id);
+
+        if (!gst_event_parse_group_id (ev, &group_id)) {
+          GST_FIXME_OBJECT (pad,
+              "Consider implementing group-id handling on stream-start event");
+          group_id = gst_util_group_id_next ();
+        }
+
         GST_DEBUG_OBJECT (pad, "Got stream-start, group_id:%d, input %p",
             group_id, input->input);
         if (set_input_group_id (input->input, &group_id)) {
@@ -247,32 +250,28 @@ parse_chain_output_probe (GstPad * pad, GstPadProbeInfo * info,
       }
         break;
       case GST_EVENT_EOS:
-        /* FIXME : Make sure this makes sense ... */
-        if (TRUE) {
+        input->saw_eos = TRUE;
+        if (all_inputs_are_eos (input->dbin)) {
           GST_DEBUG_OBJECT (pad, "real input pad, marking as EOS");
-          input->saw_eos = TRUE;
           check_all_streams_for_eos (input->dbin);
-          ret = GST_PAD_PROBE_DROP;
         } else {
-          MultiQueueSlot *slot;
+          GstPad *peer = gst_pad_get_peer (input->srcpad);
+          if (peer) {
+            /* Send custom-eos event to multiqueue slot */
+            GstStructure *s;
+            GstEvent *event;
 
-          g_mutex_lock (&input->dbin->selection_lock);
-          slot = get_slot_for_input (input->dbin, input);
-          g_mutex_unlock (&input->dbin->selection_lock);
-
-          slot->drain_eos = input->drain_eos;
-
-          if (input->drain_eos) {
             GST_DEBUG_OBJECT (pad,
-                "Got EOS at end of input stream (drain_eos:%d) Dropping.",
-                input->drain_eos);
-            ret = GST_PAD_PROBE_DROP;
+                "Got EOS end of input stream, post custom-eos");
+            s = gst_structure_new_empty ("decodebin3-custom-eos");
+            event = gst_event_new_custom (GST_EVENT_CUSTOM_DOWNSTREAM, s);
+            gst_pad_send_event (peer, event);
+            gst_object_unref (peer);
           } else {
-            GST_DEBUG_OBJECT (pad,
-                "Got EOS at end of input stream (drain_eos:%d) Passing.",
-                input->drain_eos);
+            GST_FIXME_OBJECT (pad, "No peer, what should we do ?");
           }
         }
+        ret = GST_PAD_PROBE_DROP;
         break;
       case GST_EVENT_FLUSH_STOP:
         GST_DEBUG_OBJECT (pad, "Clear saw_eos flag");
@@ -462,8 +461,7 @@ parsebin_buffer_probe (GstPad * pad, GstPadProbeInfo * info,
   g_mutex_lock (&dbin->selection_lock);
   for (tmp = dbin->slots; tmp; tmp = tmp->next) {
     MultiQueueSlot *slot = (MultiQueueSlot *) tmp->data;
-    GST_LOG_OBJECT (dbin, "Slot %d input:%p drain_eos:%d",
-        slot->id, slot->input, slot->drain_eos);
+    GST_LOG_OBJECT (dbin, "Slot %d input:%p", slot->id, slot->input);
     if (slot->input == NULL) {
       unused_slot =
           g_list_append (unused_slot, gst_object_ref (slot->sink_pad));
@@ -571,8 +569,35 @@ parsebin_pad_removed_cb (GstElement * demux, GstPad * pad, DecodebinInput * inp)
   if (input) {
     GST_DEBUG_OBJECT (pad, "stream %p", input);
     if (inp->pending_pads == NULL) {
+      MultiQueueSlot *slot;
+
       GST_DEBUG_OBJECT (pad, "Remove input stream %p", input);
+
+      SELECTION_LOCK (dbin);
+      slot = get_slot_for_input (dbin, input);
+      SELECTION_UNLOCK (dbin);
+
       remove_input_stream (dbin, input);
+
+      SELECTION_LOCK (dbin);
+      if (slot && g_list_find (dbin->slots, slot) && slot->is_drained) {
+        /* if slot is still there and already drained, remove it in here */
+        if (slot->output) {
+          DecodebinOutputStream *output = slot->output;
+          GST_DEBUG_OBJECT (pad,
+              "Multiqueue was drained, Remove output stream");
+
+          dbin->output_streams = g_list_remove (dbin->output_streams, output);
+          free_output_stream (dbin, output);
+        }
+        GST_DEBUG_OBJECT (pad, "No pending pad, Remove multiqueue slot");
+        if (slot->probe_id)
+          gst_pad_remove_probe (slot->src_pad, slot->probe_id);
+        slot->probe_id = 0;
+        dbin->slots = g_list_remove (dbin->slots, slot);
+        free_multiqueue_slot_async (dbin, slot);
+      }
+      SELECTION_UNLOCK (dbin);
     } else {
       input->srcpad = NULL;
       if (input->input_buffer_probe_id)

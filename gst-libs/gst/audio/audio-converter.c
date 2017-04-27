@@ -32,24 +32,18 @@
 
 /**
  * SECTION:audioconverter
+ * @title: GstAudioConverter
  * @short_description: Generic audio conversion
  *
- * <refsect2>
- * <para>
  * This object is used to convert audio samples from one format to another.
  * The object can perform conversion of:
- * <itemizedlist>
- *  <listitem><para>
- *    audio format with optional dithering and noise shaping
- *  </para></listitem>
- *  <listitem><para>
- *    audio samplerate
- *  </para></listitem>
- *  <listitem><para>
- *    audio channels and channel layout
- *  </para></listitem>
- * </para>
- * </refsect2>
+ *
+ *  * audio format with optional dithering and noise shaping
+ *
+ *  * audio samplerate
+ *
+ *  * audio channels and channel layout
+ *
  */
 
 #ifndef GST_DISABLE_GST_DEBUG
@@ -80,6 +74,8 @@ typedef void (*AudioConvertFunc) (gpointer dst, const gpointer src, gint count);
 typedef gboolean (*AudioConvertSamplesFunc) (GstAudioConverter * convert,
     GstAudioConverterFlags flags, gpointer in[], gsize in_frames,
     gpointer out[], gsize out_frames);
+typedef void (*AudioConvertEndianFunc) (gpointer dst, const gpointer src,
+    gint count);
 
 /*                           int/int    int/float  float/int float/float
  *
@@ -113,35 +109,34 @@ struct _GstAudioConverter
   gpointer *out_data;
   gsize out_frames;
 
+  gboolean in_place;            /* the conversion can be done in place; returned by gst_audio_converter_supports_inplace() */
+
   /* unpack */
   gboolean in_default;
   gboolean unpack_ip;
-  AudioChain *unpack_chain;
 
   /* convert in */
   AudioConvertFunc convert_in;
-  AudioChain *convert_in_chain;
 
   /* channel mix */
   gboolean mix_passthrough;
   GstAudioChannelMixer *mix;
-  AudioChain *mix_chain;
 
   /* resample */
   GstAudioResampler *resampler;
-  AudioChain *resample_chain;
 
   /* convert out */
   AudioConvertFunc convert_out;
-  AudioChain *convert_out_chain;
 
   /* quant */
   GstAudioQuantize *quant;
-  AudioChain *quant_chain;
 
   /* pack */
   gboolean out_default;
-  AudioChain *pack_chain;
+  AudioChain *chain_end;        /* NULL for empty chain or points to the last element in the chain */
+
+  /* endian swap */
+  AudioConvertEndianFunc swap_endian;
 
   AudioConvertSamplesFunc convert;
 };
@@ -598,7 +593,7 @@ chain_unpack (GstAudioConverter * convert)
       gst_audio_format_to_string (in->finfo->format),
       gst_audio_format_to_string (convert->current_format));
 
-  prev = convert->unpack_chain = audio_chain_new (NULL, convert);
+  prev = audio_chain_new (NULL, convert);
   prev->allow_ip = prev->finfo->width <= in->finfo->width;
   prev->pass_alloc = FALSE;
   audio_chain_set_make_func (prev, do_unpack, convert, NULL);
@@ -621,7 +616,7 @@ chain_convert_in (GstAudioConverter * convert, AudioChain * prev)
     convert->convert_in = (AudioConvertFunc) audio_orc_s32_to_double;
     convert->current_format = GST_AUDIO_FORMAT_F64;
 
-    prev = convert->convert_in_chain = audio_chain_new (prev, convert);
+    prev = audio_chain_new (prev, convert);
     prev->allow_ip = FALSE;
     prev->pass_alloc = FALSE;
     audio_chain_set_make_func (prev, do_convert_in, convert, NULL);
@@ -656,7 +651,7 @@ chain_mix (GstAudioConverter * convert, AudioChain * prev)
       in->channels, out->channels);
 
   if (!convert->mix_passthrough) {
-    prev = convert->mix_chain = audio_chain_new (prev, convert);
+    prev = audio_chain_new (prev, convert);
     prev->allow_ip = FALSE;
     prev->pass_alloc = FALSE;
     audio_chain_set_make_func (prev, do_mix, convert, NULL);
@@ -692,7 +687,7 @@ chain_resample (GstAudioConverter * convert, AudioChain * prev)
         gst_audio_resampler_new (method, flags, format, channels, in->rate,
         out->rate, convert->config);
 
-    prev = convert->resample_chain = audio_chain_new (prev, convert);
+    prev = audio_chain_new (prev, convert);
     prev->allow_ip = FALSE;
     prev->pass_alloc = FALSE;
     audio_chain_set_make_func (prev, do_resample, convert, NULL);
@@ -715,7 +710,7 @@ chain_convert_out (GstAudioConverter * convert, AudioChain * prev)
     convert->current_format = GST_AUDIO_FORMAT_S32;
 
     GST_INFO ("convert F64 to S32");
-    prev = convert->convert_out_chain = audio_chain_new (prev, convert);
+    prev = audio_chain_new (prev, convert);
     prev->allow_ip = TRUE;
     prev->pass_alloc = FALSE;
     audio_chain_set_make_func (prev, do_convert_out, convert, NULL);
@@ -769,7 +764,7 @@ chain_quantize (GstAudioConverter * convert, AudioChain * prev)
         gst_audio_quantize_new (dither, ns, 0, convert->current_format,
         out->channels, 1U << (32 - out_depth));
 
-    prev = convert->quant_chain = audio_chain_new (prev, convert);
+    prev = audio_chain_new (prev, convert);
     prev->allow_ip = TRUE;
     prev->pass_alloc = TRUE;
     audio_chain_set_make_func (prev, do_quantize, convert, NULL);
@@ -809,7 +804,7 @@ setup_allocators (GstAudioConverter * convert)
   }
   /* now walk backwards, we try to write into the dest samples directly
    * and keep track if the source needs to be writable */
-  for (chain = convert->pack_chain; chain; chain = chain->prev) {
+  for (chain = convert->chain_end; chain; chain = chain->prev) {
     chain->alloc_func = alloc_func;
     chain->alloc_data = convert;
     chain->allow_ip = allow_ip && chain->allow_ip;
@@ -832,7 +827,13 @@ converter_passthrough (GstAudioConverter * convert,
   AudioChain *chain;
   gsize samples;
 
-  chain = convert->pack_chain;
+  /* in-place passthrough -> do nothing */
+  if (in == out) {
+    g_assert (convert->in_place);
+    return TRUE;
+  }
+
+  chain = convert->chain_end;
 
   samples = in_frames * chain->inc;
 
@@ -844,8 +845,160 @@ converter_passthrough (GstAudioConverter * convert,
 
     bytes = samples * (convert->in.bpf / convert->in.channels);
 
-    for (i = 0; i < chain->blocks; i++)
+    for (i = 0; i < chain->blocks; i++) {
+      if (out[i] == in[i]) {
+        g_assert (convert->in_place);
+        continue;
+      }
+
       memcpy (out[i], in[i], bytes);
+    }
+  } else {
+    for (i = 0; i < chain->blocks; i++)
+      gst_audio_format_fill_silence (convert->in.finfo, out[i], samples);
+  }
+  return TRUE;
+}
+
+/* perform LE<->BE conversion on a block of @count 16-bit samples
+ * dst may equal src for in-place conversion
+ */
+static void
+converter_swap_endian_16 (gpointer dst, const gpointer src, gint count)
+{
+  guint16 *out = dst;
+  const guint16 *in = src;
+  gint i;
+
+  for (i = 0; i < count; i++)
+    out[i] = GUINT16_SWAP_LE_BE (in[i]);
+}
+
+/* perform LE<->BE conversion on a block of @count 24-bit samples
+ * dst may equal src for in-place conversion
+ *
+ * naive algorithm, which performs better with -O3 and worse with -O2
+ * than the commented out optimized algorithm below
+ */
+static void
+converter_swap_endian_24 (gpointer dst, const gpointer src, gint count)
+{
+  guint8 *out = dst;
+  const guint8 *in = src;
+  gint i;
+
+  count *= 3;
+
+  for (i = 0; i < count; i += 3) {
+    guint8 x = in[i + 0];
+    out[i + 0] = in[i + 2];
+    out[i + 1] = in[i + 1];
+    out[i + 2] = x;
+  }
+}
+
+/* the below code performs better with -O2 but worse with -O3 */
+#if 0
+/* perform LE<->BE conversion on a block of @count 24-bit samples
+ * dst may equal src for in-place conversion
+ *
+ * assumes that dst and src are 32-bit aligned
+ */
+static void
+converter_swap_endian_24 (gpointer dst, const gpointer src, gint count)
+{
+  guint32 *out = dst;
+  const guint32 *in = src;
+  guint8 *out8;
+  const guint8 *in8;
+  gint i;
+
+  /* first convert 24-bit samples in multiples of 4 reading 3x 32-bits in one cycle
+   *
+   * input:               A1 B1 C1 A2 , B2 C2 A3 B3 , C3 A4 B4 C4
+   * 32-bit endian swap:  A2 C1 B1 A1 , B3 A3 C2 B2 , C4 B4 A4 C3
+   *                      <--  x  -->   <--  y  --> , <--  z  -->
+   *
+   * desired output:      C1 B1 A1 C2 , B2 A2 C3 B3 , A3 C4 B4 A4
+   */
+  for (i = 0; i < count / 4; i++, in += 3, out += 3) {
+    guint32 x, y, z;
+
+    x = GUINT32_SWAP_LE_BE (in[0]);
+    y = GUINT32_SWAP_LE_BE (in[1]);
+    z = GUINT32_SWAP_LE_BE (in[2]);
+
+#if G_BYTE_ORDER == G_BIG_ENDIAN
+    out[0] = (x << 8) + ((y >> 8) & 0xff);
+    out[1] = (in[1] & 0xff0000ff) + ((x >> 8) & 0xff0000) + ((z << 8) & 0xff00);
+    out[2] = (z >> 8) + ((y << 8) & 0xff000000);
+#else
+    out[0] = (x >> 8) + ((y << 8) & 0xff000000);
+    out[1] = (in[1] & 0xff0000ff) + ((x << 8) & 0xff00) + ((z >> 8) & 0xff0000);
+    out[2] = (z << 8) + ((y >> 8) & 0xff);
+#endif
+  }
+
+  /* convert the remainder less efficiently */
+  for (out8 = (guint8 *) out, in8 = (const guint8 *) in, i = 0; i < (count & 3);
+      i++) {
+    guint8 x = in8[i + 0];
+    out8[i + 0] = in8[i + 2];
+    out8[i + 1] = in8[i + 1];
+    out8[i + 2] = x;
+  }
+}
+#endif
+
+/* perform LE<->BE conversion on a block of @count 32-bit samples
+ * dst may equal src for in-place conversion
+ */
+static void
+converter_swap_endian_32 (gpointer dst, const gpointer src, gint count)
+{
+  guint32 *out = dst;
+  const guint32 *in = src;
+  gint i;
+
+  for (i = 0; i < count; i++)
+    out[i] = GUINT32_SWAP_LE_BE (in[i]);
+}
+
+/* perform LE<->BE conversion on a block of @count 64-bit samples
+ * dst may equal src for in-place conversion
+ */
+static void
+converter_swap_endian_64 (gpointer dst, const gpointer src, gint count)
+{
+  guint64 *out = dst;
+  const guint64 *in = src;
+  gint i;
+
+  for (i = 0; i < count; i++)
+    out[i] = GUINT64_SWAP_LE_BE (in[i]);
+}
+
+/* the worker function to perform endian-conversion only
+ * assuming finfo and foutinfo have the same depth
+ */
+static gboolean
+converter_endian (GstAudioConverter * convert,
+    GstAudioConverterFlags flags, gpointer in[], gsize in_frames,
+    gpointer out[], gsize out_frames)
+{
+  gint i;
+  AudioChain *chain;
+  gsize samples;
+
+  chain = convert->chain_end;
+  samples = in_frames * chain->inc;
+
+  GST_LOG ("convert endian: %" G_GSIZE_FORMAT " / %" G_GSIZE_FORMAT " samples",
+      in_frames, samples);
+
+  if (in) {
+    for (i = 0; i < chain->blocks; i++)
+      convert->swap_endian (out[i], in[i], samples);
   } else {
     for (i = 0; i < chain->blocks; i++)
       gst_audio_format_fill_silence (convert->in.finfo, out[i], samples);
@@ -863,7 +1016,7 @@ converter_generic (GstAudioConverter * convert,
   gint i;
   gsize produced;
 
-  chain = convert->pack_chain;
+  chain = convert->chain_end;
 
   convert->in_writable = flags & GST_AUDIO_CONVERTER_FLAG_IN_WRITABLE;
   convert->in_data = in;
@@ -894,6 +1047,14 @@ converter_resample (GstAudioConverter * convert,
 
   return TRUE;
 }
+
+#define GST_AUDIO_FORMAT_IS_ENDIAN_CONVERSION(info1, info2) \
+		( \
+			!(((info1)->flags ^ (info2)->flags) & (~GST_AUDIO_FORMAT_FLAG_UNPACK)) && \
+			(info1)->endianness != (info2)->endianness && \
+			(info1)->width == (info2)->width && \
+			(info1)->depth == (info2)->depth \
+		)
 
 /**
  * gst_audio_converter_new: (skip)
@@ -953,21 +1114,53 @@ gst_audio_converter_new (GstAudioConverterFlags flags, GstAudioInfo * in_info,
   /* step 6, optional quantize */
   prev = chain_quantize (convert, prev);
   /* step 7, pack */
-  convert->pack_chain = chain_pack (convert, prev);
+  convert->chain_end = chain_pack (convert, prev);
 
   convert->convert = converter_generic;
+  convert->in_place = FALSE;
 
   /* optimize */
-  if (out_info->finfo->format == in_info->finfo->format
-      && convert->mix_passthrough) {
-    if (convert->resampler == NULL) {
-      GST_INFO
-          ("same formats, no resampler and passthrough mixing -> passthrough");
-      convert->convert = converter_passthrough;
-    } else {
-      if (is_intermediate_format (in_info->finfo->format)) {
-        GST_INFO ("same formats, and passthrough mixing -> only resampling");
-        convert->convert = converter_resample;
+  if (convert->mix_passthrough) {
+    if (out_info->finfo->format == in_info->finfo->format) {
+      if (convert->resampler == NULL) {
+        GST_INFO
+            ("same formats, no resampler and passthrough mixing -> passthrough");
+        convert->convert = converter_passthrough;
+        convert->in_place = TRUE;
+      } else {
+        if (is_intermediate_format (in_info->finfo->format)) {
+          GST_INFO ("same formats, and passthrough mixing -> only resampling");
+          convert->convert = converter_resample;
+        }
+      }
+    } else if (GST_AUDIO_FORMAT_IS_ENDIAN_CONVERSION (out_info->finfo,
+            in_info->finfo)) {
+      if (convert->resampler == NULL) {
+        GST_INFO ("no resampler, passthrough mixing -> only endian conversion");
+        convert->convert = converter_endian;
+        convert->in_place = TRUE;
+
+        switch (GST_AUDIO_INFO_BPS (in_info)) {
+          case 2:
+            GST_DEBUG ("initializing 16-bit endian conversion");
+            convert->swap_endian = converter_swap_endian_16;
+            break;
+          case 3:
+            GST_DEBUG ("initializing 24-bit endian conversion");
+            convert->swap_endian = converter_swap_endian_24;
+            break;
+          case 4:
+            GST_DEBUG ("initializing 32-bit endian conversion");
+            convert->swap_endian = converter_swap_endian_32;
+            break;
+          case 8:
+            GST_DEBUG ("initializing 64-bit endian conversion");
+            convert->swap_endian = converter_swap_endian_64;
+            break;
+          default:
+            GST_ERROR ("unsupported sample width for endian conversion");
+            g_assert_not_reached ();
+        }
       }
     }
   }
@@ -993,20 +1186,17 @@ unpositioned:
 void
 gst_audio_converter_free (GstAudioConverter * convert)
 {
+  AudioChain *chain;
+
   g_return_if_fail (convert != NULL);
 
-  if (convert->unpack_chain)
-    audio_chain_free (convert->unpack_chain);
-  if (convert->convert_in_chain)
-    audio_chain_free (convert->convert_in_chain);
-  if (convert->mix_chain)
-    audio_chain_free (convert->mix_chain);
-  if (convert->resample_chain)
-    audio_chain_free (convert->resample_chain);
-  if (convert->convert_out_chain)
-    audio_chain_free (convert->convert_out_chain);
-  if (convert->quant_chain)
-    audio_chain_free (convert->quant_chain);
+  /* walk the chain backwards and free all elements */
+  for (chain = convert->chain_end; chain;) {
+    AudioChain *prev = chain->prev;
+    audio_chain_free (chain);
+    chain = prev;
+  }
+
   if (convert->quant)
     gst_audio_quantize_free (convert->quant);
   if (convert->mix)
@@ -1137,4 +1327,19 @@ gst_audio_converter_samples (GstAudioConverter * convert,
     return TRUE;
   }
   return convert->convert (convert, flags, in, in_frames, out, out_frames);
+}
+
+/**
+ * gst_audio_converter_supports_inplace:
+ * @convert: a #GstAudioConverter
+ *
+ * Returns whether the audio converter can perform the conversion in-place.
+ * The return value would be typically input to gst_base_transform_set_in_place()
+ *
+ * Returns: %TRUE when the conversion can be done in place.
+ */
+gboolean
+gst_audio_converter_supports_inplace (GstAudioConverter * convert)
+{
+  return convert->in_place;
 }

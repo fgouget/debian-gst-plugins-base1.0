@@ -19,6 +19,7 @@
  */
 /**
  * SECTION:gstappsrc
+ * @title: GstAppSrc
  * @short_description: Easy way for applications to inject buffers into a
  *     pipeline
  * @see_also: #GstBaseSrc, appsink
@@ -189,26 +190,6 @@ GST_STATIC_PAD_TEMPLATE ("src",
     GST_PAD_SRC,
     GST_PAD_ALWAYS,
     GST_STATIC_CAPS_ANY);
-
-GType
-gst_app_stream_type_get_type (void)
-{
-  static volatile gsize stream_type_type = 0;
-  static const GEnumValue stream_type[] = {
-    {GST_APP_STREAM_TYPE_STREAM, "GST_APP_STREAM_TYPE_STREAM", "stream"},
-    {GST_APP_STREAM_TYPE_SEEKABLE, "GST_APP_STREAM_TYPE_SEEKABLE", "seekable"},
-    {GST_APP_STREAM_TYPE_RANDOM_ACCESS, "GST_APP_STREAM_TYPE_RANDOM_ACCESS",
-        "random-access"},
-    {0, NULL, NULL}
-  };
-
-  if (g_once_init_enter (&stream_type_type)) {
-    GType tmp = g_enum_register_static ("GstAppStreamType", stream_type);
-    g_once_init_leave (&stream_type_type, tmp);
-  }
-
-  return (GType) stream_type_type;
-}
 
 static void gst_app_src_uri_handler_init (gpointer g_iface,
     gpointer iface_data);
@@ -758,7 +739,7 @@ gst_app_src_get_property (GObject * object, guint prop_id, GValue * value,
       break;
     case PROP_MIN_LATENCY:
     {
-      guint64 min;
+      guint64 min = 0;
 
       gst_app_src_get_latency (appsrc, &min, NULL);
       g_value_set_int64 (value, min);
@@ -766,7 +747,7 @@ gst_app_src_get_property (GObject * object, guint prop_id, GValue * value,
     }
     case PROP_MAX_LATENCY:
     {
-      guint64 max;
+      guint64 max = 0;
 
       gst_app_src_get_latency (appsrc, NULL, &max);
       g_value_set_int64 (value, max);

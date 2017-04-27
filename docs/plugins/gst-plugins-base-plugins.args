@@ -79,6 +79,16 @@
 </ARG>
 
 <ARG>
+<NAME>GstVideoScale::n-threads</NAME>
+<TYPE>guint</TYPE>
+<RANGE></RANGE>
+<FLAGS>rwx</FLAGS>
+<NICK>Threads</NICK>
+<BLURB>Maximum number of threads to use.</BLURB>
+<DEFAULT>1</DEFAULT>
+</ARG>
+
+<ARG>
 <NAME>GstURIDecodeBin::buffer-duration</NAME>
 <TYPE>gint64</TYPE>
 <RANGE>>= G_MAXULONG</RANGE>
@@ -989,6 +999,16 @@
 </ARG>
 
 <ARG>
+<NAME>GstVideoConvert::n-threads</NAME>
+<TYPE>guint</TYPE>
+<RANGE></RANGE>
+<FLAGS>rw</FLAGS>
+<NICK>Threads</NICK>
+<BLURB>Maximum number of threads to use.</BLURB>
+<DEFAULT>1</DEFAULT>
+</ARG>
+
+<ARG>
 <NAME>GstGioStreamSrc::stream</NAME>
 <TYPE>GInputStream*</TYPE>
 <RANGE></RANGE>
@@ -1389,6 +1409,16 @@
 </ARG>
 
 <ARG>
+<NAME>GstAppSink::buffer-list</NAME>
+<TYPE>gboolean</TYPE>
+<RANGE></RANGE>
+<FLAGS>rw</FLAGS>
+<NICK>Buffer List</NICK>
+<BLURB>Use buffer lists.</BLURB>
+<DEFAULT>FALSE</DEFAULT>
+</ARG>
+
+<ARG>
 <NAME>GstVolume::mute</NAME>
 <TYPE>gboolean</TYPE>
 <RANGE></RANGE>
@@ -1589,6 +1619,36 @@
 </ARG>
 
 <ARG>
+<NAME>GstVideoTestSrc::animation-mode</NAME>
+<TYPE>GstVideoTestSrcAnimationMode</TYPE>
+<RANGE></RANGE>
+<FLAGS>rw</FLAGS>
+<NICK>Animation mode</NICK>
+<BLURB>For pattern=ball, which counter defines the position of the ball.</BLURB>
+<DEFAULT>frame count</DEFAULT>
+</ARG>
+
+<ARG>
+<NAME>GstVideoTestSrc::flip</NAME>
+<TYPE>gboolean</TYPE>
+<RANGE></RANGE>
+<FLAGS>rw</FLAGS>
+<NICK>Flip</NICK>
+<BLURB>For pattern=ball, invert colors every second.</BLURB>
+<DEFAULT>FALSE</DEFAULT>
+</ARG>
+
+<ARG>
+<NAME>GstVideoTestSrc::motion</NAME>
+<TYPE>GstVideoTestSrcMotionType</TYPE>
+<RANGE></RANGE>
+<FLAGS>rw</FLAGS>
+<NICK>Motion</NICK>
+<BLURB>For pattern=ball, what motion the ball does.</BLURB>
+<DEFAULT>Ball waves back and forth, up and down</DEFAULT>
+</ARG>
+
+<ARG>
 <NAME>GstVideoRate::average-period</NAME>
 <TYPE>guint64</TYPE>
 <RANGE><= G_MAXLONG</RANGE>
@@ -1689,6 +1749,16 @@
 </ARG>
 
 <ARG>
+<NAME>GstVideoRate::rate</NAME>
+<TYPE>gdouble</TYPE>
+<RANGE>>= 0</RANGE>
+<FLAGS>rw</FLAGS>
+<NICK>Rate</NICK>
+<BLURB>Factor of speed for frame displaying.</BLURB>
+<DEFAULT>1</DEFAULT>
+</ARG>
+
+<ARG>
 <NAME>GstAudioConvert::dithering</NAME>
 <TYPE>GstAudioDitherMethod</TYPE>
 <RANGE></RANGE>
@@ -1786,6 +1856,16 @@
 <NICK>Port</NICK>
 <BLURB>The port to receive packets from.</BLURB>
 <DEFAULT>4953</DEFAULT>
+</ARG>
+
+<ARG>
+<NAME>GstTCPClientSrc::timeout</NAME>
+<TYPE>guint</TYPE>
+<RANGE></RANGE>
+<FLAGS>rw</FLAGS>
+<NICK>timeout</NICK>
+<BLURB>Value in seconds to timeout a blocking I/O. 0 = No timeout. .</BLURB>
+<DEFAULT>0</DEFAULT>
 </ARG>
 
 <ARG>
@@ -2855,7 +2935,7 @@
 <FLAGS>rw</FLAGS>
 <NICK>Use Buffering</NICK>
 <BLURB>Perform buffering on demuxed/parsed media.</BLURB>
-<DEFAULT>FALSE</DEFAULT>
+<DEFAULT>TRUE</DEFAULT>
 </ARG>
 
 <ARG>
@@ -2995,7 +3075,7 @@
 <FLAGS>rw</FLAGS>
 <NICK>Flags</NICK>
 <BLURB>Flags to control behaviour.</BLURB>
-<DEFAULT>Render the video stream|Render the audio stream|Render subtitles|Use software volume|Deinterlace video if necessary|Use software color balance</DEFAULT>
+<DEFAULT>Render the video stream|Render the audio stream|Render subtitles|Use software volume|Buffer demuxed/parsed data|Deinterlace video if necessary|Use software color balance</DEFAULT>
 </ARG>
 
 <ARG>
@@ -3296,5 +3376,175 @@
 <NICK>Visualize adaptive quantization modes</NICK>
 <BLURB>Show adaptive quantization mode selection overlaid on image. Value gives a mask for quantization (QI) modes to show.</BLURB>
 <DEFAULT>0</DEFAULT>
+</ARG>
+
+<ARG>
+<NAME>GstRawVideoParse::format</NAME>
+<TYPE>GstVideoFormat</TYPE>
+<RANGE></RANGE>
+<FLAGS>rw</FLAGS>
+<NICK>Format</NICK>
+<BLURB>Format of frames in raw stream.</BLURB>
+<DEFAULT>GST_VIDEO_FORMAT_I420</DEFAULT>
+</ARG>
+
+<ARG>
+<NAME>GstRawVideoParse::frame-stride</NAME>
+<TYPE>guint</TYPE>
+<RANGE></RANGE>
+<FLAGS>rw</FLAGS>
+<NICK>Frame stride</NICK>
+<BLURB>Stride between whole frames (0 = frames are tightly packed together).</BLURB>
+<DEFAULT>0</DEFAULT>
+</ARG>
+
+<ARG>
+<NAME>GstRawVideoParse::framerate</NAME>
+<TYPE>GstFraction</TYPE>
+<RANGE></RANGE>
+<FLAGS>rw</FLAGS>
+<NICK>Frame rate</NICK>
+<BLURB>Rate of frames in raw stream.</BLURB>
+<DEFAULT></DEFAULT>
+</ARG>
+
+<ARG>
+<NAME>GstRawVideoParse::height</NAME>
+<TYPE>gint</TYPE>
+<RANGE>>= 0</RANGE>
+<FLAGS>rw</FLAGS>
+<NICK>Height</NICK>
+<BLURB>Height of frames in raw stream.</BLURB>
+<DEFAULT>240</DEFAULT>
+</ARG>
+
+<ARG>
+<NAME>GstRawVideoParse::interlaced</NAME>
+<TYPE>gboolean</TYPE>
+<RANGE></RANGE>
+<FLAGS>rw</FLAGS>
+<NICK>Interlaced flag</NICK>
+<BLURB>True if frames in raw stream are interlaced.</BLURB>
+<DEFAULT>FALSE</DEFAULT>
+</ARG>
+
+<ARG>
+<NAME>GstRawVideoParse::pixel-aspect-ratio</NAME>
+<TYPE>GstFraction</TYPE>
+<RANGE></RANGE>
+<FLAGS>rw</FLAGS>
+<NICK>Pixel aspect ratio</NICK>
+<BLURB>Pixel aspect ratio of frames in raw stream.</BLURB>
+<DEFAULT></DEFAULT>
+</ARG>
+
+<ARG>
+<NAME>GstRawVideoParse::plane-offsets</NAME>
+<TYPE>GstValueArray</TYPE>
+<RANGE></RANGE>
+<FLAGS>rw</FLAGS>
+<NICK>Plane offsets</NICK>
+<BLURB>Offsets of the planes in bytes (e.g. plane-offset="<0,76800>").</BLURB>
+<DEFAULT></DEFAULT>
+</ARG>
+
+<ARG>
+<NAME>GstRawVideoParse::plane-strides</NAME>
+<TYPE>GstValueArray</TYPE>
+<RANGE></RANGE>
+<FLAGS>rw</FLAGS>
+<NICK>Plane strides</NICK>
+<BLURB>Strides of the planes in bytes (e.g. plane-strides="<320,320>").</BLURB>
+<DEFAULT></DEFAULT>
+</ARG>
+
+<ARG>
+<NAME>GstRawVideoParse::top-field-first</NAME>
+<TYPE>gboolean</TYPE>
+<RANGE></RANGE>
+<FLAGS>rw</FLAGS>
+<NICK>Top field first</NICK>
+<BLURB>True if top field in frames in raw stream come first (not used if frames aren't interlaced).</BLURB>
+<DEFAULT>FALSE</DEFAULT>
+</ARG>
+
+<ARG>
+<NAME>GstRawVideoParse::width</NAME>
+<TYPE>gint</TYPE>
+<RANGE>>= 0</RANGE>
+<FLAGS>rw</FLAGS>
+<NICK>Width</NICK>
+<BLURB>Width of frames in raw stream.</BLURB>
+<DEFAULT>320</DEFAULT>
+</ARG>
+
+<ARG>
+<NAME>GstRawVideoParse::frame-size</NAME>
+<TYPE>guint</TYPE>
+<RANGE></RANGE>
+<FLAGS>rw</FLAGS>
+<NICK>Frame size</NICK>
+<BLURB>Size of a frame (0 = frames are tightly packed together).</BLURB>
+<DEFAULT>0</DEFAULT>
+</ARG>
+
+<ARG>
+<NAME>GstRawAudioParse::channel-positions</NAME>
+<TYPE>GValueArray*</TYPE>
+<RANGE></RANGE>
+<FLAGS>rw</FLAGS>
+<NICK>Channel positions</NICK>
+<BLURB>Channel positions used on the output.</BLURB>
+<DEFAULT></DEFAULT>
+</ARG>
+
+<ARG>
+<NAME>GstRawAudioParse::format</NAME>
+<TYPE>GstRawAudioParseFormat</TYPE>
+<RANGE></RANGE>
+<FLAGS>rw</FLAGS>
+<NICK>Format</NICK>
+<BLURB>Format of the raw audio stream.</BLURB>
+<DEFAULT>PCM</DEFAULT>
+</ARG>
+
+<ARG>
+<NAME>GstRawAudioParse::interleaved</NAME>
+<TYPE>gboolean</TYPE>
+<RANGE></RANGE>
+<FLAGS>rw</FLAGS>
+<NICK>Interleaved layout</NICK>
+<BLURB>True if audio has interleaved layout.</BLURB>
+<DEFAULT>TRUE</DEFAULT>
+</ARG>
+
+<ARG>
+<NAME>GstRawAudioParse::num-channels</NAME>
+<TYPE>gint</TYPE>
+<RANGE>>= 1</RANGE>
+<FLAGS>rw</FLAGS>
+<NICK>Number of channels</NICK>
+<BLURB>Number of channels in raw stream.</BLURB>
+<DEFAULT>2</DEFAULT>
+</ARG>
+
+<ARG>
+<NAME>GstRawAudioParse::pcm-format</NAME>
+<TYPE>GstAudioFormat</TYPE>
+<RANGE></RANGE>
+<FLAGS>rw</FLAGS>
+<NICK>PCM format</NICK>
+<BLURB>Format of audio samples in PCM stream (ignored if format property is not set to pcm).</BLURB>
+<DEFAULT>GST_AUDIO_FORMAT_UNKNOWN</DEFAULT>
+</ARG>
+
+<ARG>
+<NAME>GstRawAudioParse::sample-rate</NAME>
+<TYPE>gint</TYPE>
+<RANGE>>= 1</RANGE>
+<FLAGS>rw</FLAGS>
+<NICK>Sample rate</NICK>
+<BLURB>Rate of audio samples in raw stream.</BLURB>
+<DEFAULT>44100</DEFAULT>
 </ARG>
 

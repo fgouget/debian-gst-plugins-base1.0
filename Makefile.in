@@ -142,7 +142,7 @@ am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno config.status.lineno
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = config.h
-CONFIG_CLEAN_FILES = gst-plugins-base.spec
+CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
@@ -201,7 +201,6 @@ ETAGS = etags
 CTAGS = ctags
 CSCOPE = cscope
 am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/config.h.in \
-	$(srcdir)/gst-plugins-base.spec.in \
 	$(top_srcdir)/common/coverage/lcov.mak \
 	$(top_srcdir)/common/cruft.mak $(top_srcdir)/common/po.mak \
 	$(top_srcdir)/common/release.mak \
@@ -590,23 +589,31 @@ win32crlf = $(shell find $(top_srcdir)/win32 -name '*.dsw' -o -name '*.dsp')
 
 # include before EXTRA_DIST for win32 assignment
 EXTRA_DIST = \
-	gst-plugins-base.spec depcomp \
+	depcomp \
 	AUTHORS COPYING COPYING.LIB NEWS README RELEASE REQUIREMENTS \
-	ChangeLog gst-plugins-base.doap autogen.sh $(win32)
+	ChangeLog gst-plugins-base.doap autogen.sh $(win32) \
+	$(shell find "$(top_srcdir)" -type f -name meson.build ! -path "$(top_srcdir)/$(PACKAGE_TARNAME)-*" ) \
+	gst-libs/gst/audio/audio_mkenum.py \
+	gst-libs/gst/app/app_mkenum.py \
+	gst-libs/gst/pbutils/pbutils_mkenum.py \
+	gst-libs/gst/rtp/rtp_mkenum.py \
+	gst-libs/gst/rtsp/rtsp_mkenum.py \
+	gst-libs/gst/tag/tag_mkenum.py \
+	gst-libs/gst/video/video_mkenum.py \
+	meson_options.txt config.h.meson
 
 DISTCLEANFILES = _stdint.h
-WIN32_COPY = \
-	$(top_builddir)/gst-libs/gst/*/*-enumtypes.[ch] \
-	$(top_builddir)/_stdint.h
-
 
 # cruft: plugins that have been merged or moved or renamed
 CRUFT_FILES = \
+	$(top_builddir)/gst-plugins-base.spec \
+	$(top_builddir)/win32/common/config.h-new \
 	$(top_builddir)/common/shave \
 	$(top_builddir)/common/shave-libtool \
 	$(top_builddir)/gst-libs/gst/audio/testchannels \
-        $(top_builddir)/gst-libs/gst/app/gstapp-marshal.c \
-        $(top_builddir)/gst-libs/gst/app/gstapp-marshal.h \
+	$(top_builddir)/gst-libs/gst/app/gstapp-marshal.c \
+	$(top_builddir)/gst-libs/gst/app/gstapp-marshal.h \
+	$(top_builddir)/gst/encoding/.libs/libgstencodebin.so \
 	$(top_builddir)/tests/check/elements/gdppay \
 	$(top_builddir)/tests/check/elements/gdpdepay \
 	$(top_builddir)/tests/check/pipelines/streamheader \
@@ -615,6 +622,7 @@ CRUFT_FILES = \
 	$(top_builddir)/tools/gst-discoverer
 
 CRUFT_DIRS = \
+	$(top_srcdir)/docs/design \
 	$(top_srcdir)/docs/plugins/tmpl \
 	$(top_srcdir)/ext/gio \
 	$(top_srcdir)/gst/gdp \
@@ -674,8 +682,6 @@ $(srcdir)/config.h.in: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
 
 distclean-hdr:
 	-rm -f config.h stamp-h1
-gst-plugins-base.spec: $(top_builddir)/config.status $(srcdir)/gst-plugins-base.spec.in
-	cd $(top_builddir) && $(SHELL) ./config.status $@
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -1164,7 +1170,7 @@ update-exports:
 	if test -f "$(top_srcdir)/win32/common/libgstgl.def"; then \
 	  git checkout "$(top_srcdir)/win32/common/libgstgl.def";  \
 	fi
-	git add $(top_srcdir)/win32/common/libgst*.def
+	git add $(top_srcdir)/win32/common/lib*.def
 	git diff --cached -- $(top_srcdir)/win32/common/
 	echo '^^^--- updated and staged changes above'
 
@@ -1216,9 +1222,24 @@ distcheck-hook:
 	  find $(distdir) -name \*-marshal.[ch] && \
 	  false )
 
+dist-hook:
+	@if test -f meson.build && ! $(GREP) -e "version.*'$(VERSION)'" meson.build >/dev/null ; then \
+	  echo "*******************************************************"; \
+	  echo "* meson.build needs to be updated for version $(VERSION)"; \
+	  echo "*******************************************************"; \
+	  false; \
+	fi
+
 # rule to download the latest .po files
 download-po: $(top_srcdir)/common/download-translations
 	$(top_srcdir)/common/download-translations $(PACKAGE)
+	for f in po/*.po; do \
+	  num_changed=`git diff $$f | grep -e '^[+-][^+-]' | wc -l`; \
+	  num_date=`git diff $$f | grep -e '^[+-][^+-]' | grep POT-Creation-Date | wc -l`; \
+	  if [ $num_date == $num_changed ]; then \
+	    git checkout $$f; \
+	  fi; \
+	done
 
 check-valgrind:
 	$(MAKE) -C tests/check check-valgrind
@@ -1231,15 +1252,6 @@ check-valgrind:
 @HAVE_GST_CHECK_FALSE@	true
 @HAVE_GST_CHECK_FALSE@build-checks:
 @HAVE_GST_CHECK_FALSE@	true
-
-win32-update:
-	for f in $(WIN32_COPY); do cp -v $$f win32/common; done; \
-	for f in win32/common/*-enumtypes.c; do \
-	  echo "Indenting $$f"; \
-	  gst-indent $$f; gst-indent $$f; \
-	done
-	cp -v $(top_builddir)/win32/common/config.h-new \
-	    $(top_srcdir)/win32/common/config.h
 .PHONY: lcov-reset lcov lcov-run lcov-report lcov-upload lcov-clean
 
 # run lcov from scratch, always

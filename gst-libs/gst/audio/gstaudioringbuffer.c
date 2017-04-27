@@ -19,22 +19,19 @@
 
 /**
  * SECTION:gstaudioringbuffer
+ * @title: GstAudioRingBuffer
  * @short_description: Base class for audio ringbuffer implementations
  * @see_also: #GstAudioBaseSink, #GstAudioSink
  *
- * <refsect2>
- * <para>
  * This object is the base class for audio ringbuffers used by the base
  * audio source and sink classes.
- * </para>
- * <para>
+ *
  * The ringbuffer abstracts a circular buffer of data. One reader and
  * one writer can operate on the data from different threads in a lockfree
  * manner. The base class is sufficiently flexible to be used as an
  * abstraction for DMA based ringbuffers as well as a pure software
  * implementations.
- * </para>
- * </refsect2>
+ *
  */
 
 #include <string.h>
@@ -109,6 +106,9 @@ gst_audio_ring_buffer_finalize (GObject * object)
   g_cond_clear (&ringbuffer->cond);
   g_free (ringbuffer->empty_seg);
 
+  if (ringbuffer->cb_data_notify != NULL)
+    ringbuffer->cb_data_notify (ringbuffer->cb_data);
+
   G_OBJECT_CLASS (gst_audio_ring_buffer_parent_class)->finalize (G_OBJECT
       (ringbuffer));
 }
@@ -126,7 +126,10 @@ static const gchar *format_type_names[] = {
   "eac3",
   "dts",
   "aac mpeg2",
-  "aac mpeg4"
+  "aac mpeg4",
+  "aac mpeg2 raw",
+  "aac mpeg4 raw",
+  "flac"
 };
 #endif
 
@@ -277,20 +280,36 @@ gst_audio_ring_buffer_parse_caps (GstAudioRingBufferSpec * spec, GstCaps * caps)
 
     gst_structure_get_int (structure, "channels", &info.channels);
     spec->type = GST_AUDIO_RING_BUFFER_FORMAT_TYPE_MPEG;
-    info.bpf = 4;
+    info.bpf = 1;
   } else if (g_str_equal (mimetype, "audio/mpeg") &&
       gst_structure_get_int (structure, "mpegversion", &i) &&
       (i == 2 || i == 4) &&
-      !g_strcmp0 (gst_structure_get_string (structure, "stream-format"),
-          "adts")) {
+      (!g_strcmp0 (gst_structure_get_string (structure, "stream-format"),
+              "adts")
+          || !g_strcmp0 (gst_structure_get_string (structure, "stream-format"),
+              "raw"))) {
     /* MPEG-2 AAC or MPEG-4 AAC */
     if (!(gst_structure_get_int (structure, "rate", &info.rate)))
       goto parse_error;
 
     gst_structure_get_int (structure, "channels", &info.channels);
-    spec->type = (i == 2) ? GST_AUDIO_RING_BUFFER_FORMAT_TYPE_MPEG2_AAC :
-        GST_AUDIO_RING_BUFFER_FORMAT_TYPE_MPEG4_AAC;
-    info.bpf = 4;
+    if (!g_strcmp0 (gst_structure_get_string (structure, "stream-format"),
+            "adts"))
+      spec->type = (i == 2) ? GST_AUDIO_RING_BUFFER_FORMAT_TYPE_MPEG2_AAC :
+          GST_AUDIO_RING_BUFFER_FORMAT_TYPE_MPEG4_AAC;
+    else
+      spec->type = (i == 2) ?
+          GST_AUDIO_RING_BUFFER_FORMAT_TYPE_MPEG2_AAC_RAW :
+          GST_AUDIO_RING_BUFFER_FORMAT_TYPE_MPEG4_AAC_RAW;
+    info.bpf = 1;
+  } else if (g_str_equal (mimetype, "audio/x-flac")) {
+    /* extract the needed information from the cap */
+    if (!(gst_structure_get_int (structure, "rate", &info.rate)))
+      goto parse_error;
+
+    gst_structure_get_int (structure, "channels", &info.channels);
+    spec->type = GST_AUDIO_RING_BUFFER_FORMAT_TYPE_FLAC;
+    info.bpf = 1;
   } else {
     goto parse_error;
   }
@@ -356,9 +375,9 @@ gst_audio_ring_buffer_convert (GstAudioRingBuffer * buf,
 }
 
 /**
- * gst_audio_ring_buffer_set_callback:
+ * gst_audio_ring_buffer_set_callback: (skip)
  * @buf: the #GstAudioRingBuffer to set the callback on
- * @cb: (scope async): the callback to set
+ * @cb: (allow-none): the callback to set
  * @user_data: user data passed to the callback
  *
  * Sets the given callback function on the buffer. This function
@@ -370,12 +389,44 @@ void
 gst_audio_ring_buffer_set_callback (GstAudioRingBuffer * buf,
     GstAudioRingBufferCallback cb, gpointer user_data)
 {
+  gst_audio_ring_buffer_set_callback_full (buf, cb, user_data, NULL);
+}
+
+/**
+ * gst_audio_ring_buffer_set_callback_full: (rename-to gst_audio_ring_buffer_set_callback)
+ * @buf: the #GstAudioRingBuffer to set the callback on
+ * @cb: (allow-none): the callback to set
+ * @user_data: user data passed to the callback
+ * @notify: function to be called when @user_data is no longer needed
+ *
+ * Sets the given callback function on the buffer. This function
+ * will be called every time a segment has been written to a device.
+ *
+ * MT safe.
+ *
+ * Since: 1.12
+ */
+void
+gst_audio_ring_buffer_set_callback_full (GstAudioRingBuffer * buf,
+    GstAudioRingBufferCallback cb, gpointer user_data, GDestroyNotify notify)
+{
+  gpointer old_data = NULL;
+  GDestroyNotify old_notify;
+
   g_return_if_fail (GST_IS_AUDIO_RING_BUFFER (buf));
 
   GST_OBJECT_LOCK (buf);
+  old_notify = buf->cb_data_notify;
+  old_data = buf->cb_data;
+
   buf->callback = cb;
   buf->cb_data = user_data;
+  buf->cb_data_notify = notify;
   GST_OBJECT_UNLOCK (buf);
+
+  if (old_notify) {
+    old_notify (old_data);
+  }
 }
 
 

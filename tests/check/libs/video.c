@@ -347,6 +347,7 @@ video_format_is_packed (GstVideoFormat fmt)
     case GST_VIDEO_FORMAT_YUY2:
     case GST_VIDEO_FORMAT_YVYU:
     case GST_VIDEO_FORMAT_UYVY:
+    case GST_VIDEO_FORMAT_VYUY:
     case GST_VIDEO_FORMAT_AYUV:
     case GST_VIDEO_FORMAT_RGBx:
     case GST_VIDEO_FORMAT_BGRx:
@@ -611,6 +612,47 @@ GST_START_TEST (test_video_formats)
 
 GST_END_TEST;
 
+GST_START_TEST (test_video_formats_overflow)
+{
+  GstVideoInfo vinfo;
+
+  gst_video_info_init (&vinfo);
+
+  fail_unless (gst_video_info_set_format (&vinfo, GST_VIDEO_FORMAT_ARGB, 32768,
+          32767));
+  /* fails due to simplification: we forbid some things that would in theory be fine.
+   * We assume a 128 byte alignment for the width currently
+   * fail_unless (gst_video_info_set_format (&vinfo, GST_VIDEO_FORMAT_ARGB, 32767, 32768));
+   */
+  fail_if (gst_video_info_set_format (&vinfo, GST_VIDEO_FORMAT_ARGB, 32768,
+          32768));
+
+  fail_if (gst_video_info_set_format (&vinfo, GST_VIDEO_FORMAT_ARGB,
+          G_MAXINT / 2, G_MAXINT));
+  fail_if (gst_video_info_set_format (&vinfo, GST_VIDEO_FORMAT_ARGB, G_MAXINT,
+          G_MAXINT / 2));
+  fail_if (gst_video_info_set_format (&vinfo, GST_VIDEO_FORMAT_ARGB,
+          G_MAXINT / 2, G_MAXINT / 2));
+  fail_if (gst_video_info_set_format (&vinfo, GST_VIDEO_FORMAT_ARGB, G_MAXINT,
+          G_MAXINT));
+  fail_if (gst_video_info_set_format (&vinfo, GST_VIDEO_FORMAT_ARGB,
+          G_MAXUINT / 2, G_MAXUINT));
+  fail_if (gst_video_info_set_format (&vinfo, GST_VIDEO_FORMAT_ARGB, G_MAXUINT,
+          G_MAXUINT / 2));
+  fail_if (gst_video_info_set_format (&vinfo, GST_VIDEO_FORMAT_ARGB,
+          G_MAXUINT / 2, G_MAXUINT / 2));
+  fail_if (gst_video_info_set_format (&vinfo, GST_VIDEO_FORMAT_ARGB, G_MAXUINT,
+          G_MAXUINT));
+
+  fail_unless (gst_video_info_set_format (&vinfo, GST_VIDEO_FORMAT_ARGB,
+          1073741824 - 128, 1));
+  fail_if (gst_video_info_set_format (&vinfo, GST_VIDEO_FORMAT_ARGB, 1073741824,
+          1));
+
+}
+
+GST_END_TEST;
+
 GST_START_TEST (test_video_formats_rgb)
 {
   GstVideoInfo vinfo;
@@ -679,6 +721,47 @@ GST_START_TEST (test_video_formats_rgba_large_dimension)
   fail_unless (vinfo.size == (gsize) 29700 * 21000 * 4);
 
   gst_caps_unref (caps);
+}
+
+GST_END_TEST;
+
+GST_START_TEST (test_guess_framerate)
+{
+  /* Check some obvious exact framerates */
+  gint fps_n, fps_d;
+  fail_unless (gst_video_guess_framerate (GST_SECOND / 24, &fps_n, &fps_d));
+  fail_unless (fps_n == 24 && fps_d == 1);
+
+  fail_unless (gst_video_guess_framerate (GST_SECOND / 30, &fps_n, &fps_d));
+  fail_unless (fps_n == 30 && fps_d == 1);
+
+  fail_unless (gst_video_guess_framerate (GST_SECOND / 25, &fps_n, &fps_d));
+  fail_unless (fps_n == 25 && fps_d == 1);
+
+  /* Some NTSC rates: */
+  fail_unless (gst_video_guess_framerate (GST_SECOND * 1001 / 30000, &fps_n,
+          &fps_d));
+  fail_unless (fps_n == 30000 && fps_d == 1001);
+
+  fail_unless (gst_video_guess_framerate (GST_SECOND * 1001 / 24000, &fps_n,
+          &fps_d));
+  fail_unless (fps_n == 24000 && fps_d == 1001);
+
+  fail_unless (gst_video_guess_framerate (GST_SECOND * 1001 / 60000, &fps_n,
+          &fps_d));
+  fail_unless (fps_n == 60000 && fps_d == 1001);
+
+  /* Check some high FPS, low durations */
+  fail_unless (gst_video_guess_framerate (GST_SECOND / 9000, &fps_n, &fps_d));
+  fail_unless (fps_n == 9000 && fps_d == 1);
+  fail_unless (gst_video_guess_framerate (GST_SECOND / 10000, &fps_n, &fps_d));
+  fail_unless (fps_n == 10000 && fps_d == 1);
+  fail_unless (gst_video_guess_framerate (GST_SECOND / 11000, &fps_n, &fps_d));
+  fail_unless (fps_n == 11000 && fps_d == 1);
+  fail_unless (gst_video_guess_framerate (GST_SECOND / 20000, &fps_n, &fps_d));
+  fail_unless (fps_n == 20000 && fps_d == 1);
+  fail_unless (gst_video_guess_framerate (GST_SECOND / 100000, &fps_n, &fps_d));
+  fail_unless (fps_n == 100000 && fps_d == 1);
 }
 
 GST_END_TEST;
@@ -2756,10 +2839,12 @@ video_suite (void)
 
   suite_add_tcase (s, tc_chain);
   tcase_add_test (tc_chain, test_video_formats);
+  tcase_add_test (tc_chain, test_video_formats_overflow);
   tcase_add_test (tc_chain, test_video_formats_rgb);
   tcase_add_test (tc_chain, test_video_formats_rgba_large_dimension);
   tcase_add_test (tc_chain, test_video_formats_all);
   tcase_add_test (tc_chain, test_video_formats_pack_unpack);
+  tcase_add_test (tc_chain, test_guess_framerate);
   tcase_add_test (tc_chain, test_dar_calc);
   tcase_add_test (tc_chain, test_parse_caps_rgb);
   tcase_add_test (tc_chain, test_parse_caps_multiview);

@@ -579,7 +579,7 @@ EXAMPLES = $(am__append_1) $(am__append_2) $(am__append_3)
 @HAVE_GTK_X11_TRUE@@USE_X_TRUE@	$(GST_LIBS) $(X_LIBS) $(LIBM) $(GTK_LIBS)
 
 @HAVE_QT_TRUE@@USE_X_TRUE@qt_videooverlay_SOURCES = qt-videooverlay.cpp
-@HAVE_QT_TRUE@@USE_X_TRUE@qt_videooverlay_CXXFLAGS = $(GST_PLUGINS_BASE_CFLAGS) $(GST_BASE_CFLAGS) $(GST_CXXFLAGS) $(X_CFLAGS) $(QT_CFLAGS) -fPIC
+@HAVE_QT_TRUE@@USE_X_TRUE@qt_videooverlay_CXXFLAGS = $(GST_PLUGINS_BASE_CFLAGS) $(GST_BASE_CFLAGS) $(GST_CXXFLAGS) $(X_CFLAGS) $(QT_CFLAGS) -fPIC -std=c++11
 @HAVE_QT_TRUE@@USE_X_TRUE@qt_videooverlay_LDADD = \
 @HAVE_QT_TRUE@@USE_X_TRUE@	$(top_builddir)/gst-libs/gst/video/libgstvideo-$(GST_API_VERSION).la \
 @HAVE_QT_TRUE@@USE_X_TRUE@	$(GST_LIBS) $(X_LIBS) $(LIBM) $(QT_LIBS)

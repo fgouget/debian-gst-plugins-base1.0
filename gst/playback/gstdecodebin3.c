@@ -36,6 +36,7 @@
 
 /**
  * SECTION:element-decodebin3
+ * @title: decodebin3
  *
  * #GstBin that auto-magically constructs a decoding pipeline using available
  * decoders and demuxers via auto-plugging. The output is raw audio, video
@@ -43,27 +44,20 @@
  *
  * decodebin3 differs from the previous decodebin (decodebin2) in important ways:
  *
- * <itemizedlist>
- * <listitem>
- * supports publication and selection of stream information via
+ * * supports publication and selection of stream information via
  * GstStreamCollection messages and #GST_EVENT_SELECT_STREAM events.
- * </listitem>
- * <listitem>
- * dynamically switches stream connections internally, and
+ *
+ * * dynamically switches stream connections internally, and
  * reuses decoder elements when stream selections change, so that in
  * the normal case it maintains 1 decoder of each type (video/audio/subtitle)
  * and only creates new elements when streams change and an existing decoder
  * is not capable of handling the new format.
- * </listitem>
- * <listitem>
- * supports multiple input pads for the parallel decoding of auxilliary streams
+ *
+ * * supports multiple input pads for the parallel decoding of auxilliary streams
  * not muxed with the primary stream.
- * </listitem>
- * <listitem>
- * does not handle network stream buffering. decodebin3 expects that network stream
+ *
+ * * does not handle network stream buffering. decodebin3 expects that network stream
  * buffering is handled upstream, before data is passed to it.
- * </listitem>
- * </itemizedlist>
  *
  * <emphasis>decodebin3 is still experimental API and a technology preview.
  * Its behaviour and exposed API is subject to change.</emphasis>
@@ -74,7 +68,7 @@
  * Global design
  *
  * 1) From sink pad to elementary streams (GstParseBin)
- * 
+ *
  * The input sink pads are fed to GstParseBin. GstParseBin will feed them
  * through typefind. When the caps are detected (or changed) we recursively
  * figure out which demuxer, parser or depayloader is needed until we get to
@@ -115,7 +109,6 @@
  *  * STREAM_START :
  *     a new stream is starting => link it further if needed
  *
- *
  * 3) Gradual replacement
  *
  * If the caps change at any point in decodebin (input sink pad, demuxer output,
@@ -132,8 +125,6 @@
  * b) There are downstream elements, do a ACCEPT_CAPS query
  *  b.1) The new CAPS are accepted, keep current configuration
  *  b.2) The new CAPS are not accepted, remove following elements then do a)
- *
- *
  *
  *    Components:
  *
@@ -317,7 +308,7 @@ typedef struct _MultiQueueSlot
   /* id of the MQ src_pad event probe */
   gulong probe_id;
 
-  gboolean drain_eos;
+  gboolean is_drained;
 
   DecodebinOutputStream *output;
 } MultiQueueSlot;
@@ -482,6 +473,7 @@ static gboolean have_factory (GstDecodebin3 * dbin, GstCaps * caps,
 #endif
 
 static void free_input (GstDecodebin3 * dbin, DecodebinInput * input);
+static void free_input_async (GstDecodebin3 * dbin, DecodebinInput * input);
 static DecodebinInput *create_new_input (GstDecodebin3 * dbin, gboolean main);
 static gboolean set_input_group_id (DecodebinInput * input, guint32 * group_id);
 
@@ -500,6 +492,12 @@ static MultiQueueSlot *get_slot_for_input (GstDecodebin3 * dbin,
 static void link_input_to_slot (DecodebinInputStream * input,
     MultiQueueSlot * slot);
 static void free_multiqueue_slot (GstDecodebin3 * dbin, MultiQueueSlot * slot);
+static void free_multiqueue_slot_async (GstDecodebin3 * dbin,
+    MultiQueueSlot * slot);
+
+static GstStreamCollection *get_merged_collection (GstDecodebin3 * dbin);
+static void update_requested_selection (GstDecodebin3 * dbin,
+    GstStreamCollection * collection);
 
 /* FIXME: Really make all the parser stuff a self-contained helper object */
 #include "gstdecodebin3-parse.c"
@@ -618,7 +616,7 @@ gst_decodebin3_dispose (GObject * object)
     g_list_free (dbin->decoder_factories);
   if (dbin->decodable_factories)
     g_list_free (dbin->decodable_factories);
-  g_list_free (dbin->requested_selection);
+  g_list_free_full (dbin->requested_selection, g_free);
   g_list_free (dbin->active_selection);
   g_list_free (dbin->to_activate);
   g_list_free (dbin->pending_select_streams);
@@ -787,6 +785,24 @@ fail:
   return GST_PAD_LINK_REFUSED;
 }
 
+/* Drop duration query during _input_pad_unlink */
+static GstPadProbeReturn
+query_duration_drop_probe (GstPad * pad, GstPadProbeInfo * info,
+    DecodebinInput * input)
+{
+  GstPadProbeReturn ret = GST_PAD_PROBE_OK;
+
+  if (GST_IS_QUERY (GST_PAD_PROBE_INFO_DATA (info))) {
+    GstQuery *query = GST_PAD_PROBE_INFO_QUERY (info);
+    if (GST_QUERY_TYPE (query) == GST_QUERY_DURATION) {
+      GST_LOG_OBJECT (pad, "stop forwarding query duration");
+      ret = GST_PAD_PROBE_HANDLED;
+    }
+  }
+
+  return ret;
+}
+
 static void
 gst_decodebin3_input_pad_unlink (GstPad * pad, GstObject * parent)
 {
@@ -806,8 +822,50 @@ gst_decodebin3_input_pad_unlink (GstPad * pad, GstObject * parent)
   }
 
   if (GST_OBJECT_PARENT (GST_OBJECT (input->parsebin)) == GST_OBJECT (dbin)) {
+    GstStreamCollection *collection = NULL;
+    gulong probe_id = gst_pad_add_probe (input->parsebin_sink,
+        GST_PAD_PROBE_TYPE_QUERY_UPSTREAM,
+        (GstPadProbeCallback) query_duration_drop_probe, input, NULL);
+
+    /* Clear stream-collection corresponding to current INPUT and post new
+     * stream-collection message, if needed */
+    if (input->collection) {
+      gst_object_unref (input->collection);
+      input->collection = NULL;
+    }
+
+    collection = get_merged_collection (dbin);
+    if (collection && collection != dbin->collection) {
+      GstMessage *msg;
+      GST_DEBUG_OBJECT (dbin, "Update Stream Collection");
+
+      if (dbin->collection)
+        gst_object_unref (dbin->collection);
+      dbin->collection = collection;
+
+      msg =
+          gst_message_new_stream_collection ((GstObject *) dbin,
+          dbin->collection);
+
+      gst_element_post_message (GST_ELEMENT_CAST (dbin), msg);
+      update_requested_selection (dbin, dbin->collection);
+    }
+
     gst_bin_remove (GST_BIN (dbin), input->parsebin);
     gst_element_set_state (input->parsebin, GST_STATE_NULL);
+    g_signal_handler_disconnect (input->parsebin, input->pad_removed_sigid);
+    g_signal_handler_disconnect (input->parsebin, input->pad_added_sigid);
+    gst_pad_remove_probe (input->parsebin_sink, probe_id);
+    gst_object_unref (input->parsebin);
+    gst_object_unref (input->parsebin_sink);
+
+    input->parsebin = NULL;
+    input->parsebin_sink = NULL;
+
+    if (!input->is_main) {
+      dbin->other_inputs = g_list_remove (dbin->other_inputs, input);
+      free_input_async (dbin, input);
+    }
   }
   INPUT_UNLOCK (dbin);
   return;
@@ -833,6 +891,14 @@ free_input (GstDecodebin3 * dbin, DecodebinInput * input)
   if (input->collection)
     gst_object_unref (input->collection);
   g_free (input);
+}
+
+static void
+free_input_async (GstDecodebin3 * dbin, DecodebinInput * input)
+{
+  GST_LOG_OBJECT (dbin, "pushing input %p on thread pool to free", input);
+  gst_element_call_async (GST_ELEMENT_CAST (dbin),
+      (GstElementCallAsyncFunc) free_input, input, NULL);
 }
 
 /* Call with INPUT_LOCK taken */
@@ -923,7 +989,7 @@ gst_decode_bin_update_factories_list (GstDecodebin3 * dbin)
 }
 
 /* Must be called with appropriate lock if list is a protected variable */
-static gboolean
+static const gchar *
 stream_in_list (GList * list, const gchar * sid)
 {
   GList *tmp;
@@ -936,12 +1002,12 @@ stream_in_list (GList * list, const gchar * sid)
 #endif
 
   for (tmp = list; tmp; tmp = tmp->next) {
-    gchar *osid = (gchar *) tmp->data;
+    const gchar *osid = (gchar *) tmp->data;
     if (!g_strcmp0 (sid, osid))
-      return TRUE;
+      return osid;
   }
 
-  return FALSE;
+  return NULL;
 }
 
 static void
@@ -1013,10 +1079,12 @@ beach:
     if (dbin->requested_selection) {
       GST_FIXME_OBJECT (dbin,
           "Replacing non-NULL requested_selection, what should we do ??");
-      g_list_free (dbin->requested_selection);
+      g_list_free_full (dbin->requested_selection, g_free);
     }
-    dbin->requested_selection = tmp;
+    dbin->requested_selection =
+        g_list_copy_deep (tmp, (GCopyFunc) g_strdup, NULL);
     dbin->selection_updated = TRUE;
+    g_list_free (tmp);
   }
   SELECTION_UNLOCK (dbin);
 }
@@ -1046,7 +1114,7 @@ get_merged_collection (GstDecodebin3 * dbin)
 
   if (!needs_merge) {
     GST_DEBUG_OBJECT (dbin, "No need to merge, returning %p", res);
-    return gst_object_ref (res);
+    return res ? gst_object_ref (res) : NULL;
   }
 
   /* We really need to create a new collection */
@@ -1117,22 +1185,22 @@ find_message_parsebin (GstDecodebin3 * dbin, GstElement * child)
   return input;
 }
 
-static gboolean
+static const gchar *
 stream_in_collection (GstDecodebin3 * dbin, gchar * sid)
 {
   guint i, len;
 
   if (dbin->collection == NULL)
-    return FALSE;
+    return NULL;
   len = gst_stream_collection_get_size (dbin->collection);
   for (i = 0; i < len; i++) {
     GstStream *stream = gst_stream_collection_get_stream (dbin->collection, i);
     const gchar *osid = gst_stream_get_stream_id (stream);
     if (!g_strcmp0 (sid, osid))
-      return TRUE;
+      return osid;
   }
 
-  return FALSE;
+  return NULL;
 }
 
 /* Call with INPUT_LOCK taken */
@@ -1281,6 +1349,7 @@ get_output_for_slot (MultiQueueSlot * slot)
   DecodebinOutputStream *output = NULL;
   const gchar *stream_id;
   GstCaps *caps;
+  gchar *id_in_list = NULL;
 
   /* If we already have a configured output, just use it */
   if (slot->output != NULL)
@@ -1288,7 +1357,7 @@ get_output_for_slot (MultiQueueSlot * slot)
 
   /*
    * FIXME
-   * 
+   *
    * This method needs to be split into multiple parts
    *
    * 1) Figure out whether stream should be exposed or not
@@ -1331,7 +1400,8 @@ get_output_for_slot (MultiQueueSlot * slot)
 #endif
 
   /* 3. In default mode check if we should expose */
-  if (stream_in_list (dbin->requested_selection, stream_id)) {
+  id_in_list = (gchar *) stream_in_list (dbin->requested_selection, stream_id);
+  if (id_in_list) {
     /* Check if we can steal an existing output stream we could re-use.
      * that is:
      * * an output stream whose slot->stream is not in requested
@@ -1343,7 +1413,8 @@ get_output_for_slot (MultiQueueSlot * slot)
       dbin->to_activate =
           g_list_append (dbin->to_activate, (gchar *) stream_id);
       dbin->requested_selection =
-          g_list_remove (dbin->requested_selection, stream_id);
+          g_list_remove (dbin->requested_selection, id_in_list);
+      g_free (id_in_list);
       SELECTION_UNLOCK (dbin);
       gst_pad_add_probe (output->slot->src_pad, GST_PAD_PROBE_TYPE_IDLE,
           (GstPadProbeCallback) slot_unassign_probe, output->slot, NULL);
@@ -1431,6 +1502,7 @@ multiqueue_src_probe (GstPad * pad, GstPadProbeInfo * info,
               "Got a STREAM_START event without a GstStream");
           break;
         }
+        slot->is_drained = FALSE;
         stream_id = gst_stream_get_stream_id (stream);
         GST_DEBUG_OBJECT (pad, "Stream Start '%s'", stream_id);
         if (slot->active_stream == NULL) {
@@ -1490,6 +1562,7 @@ multiqueue_src_probe (GstPad * pad, GstPadProbeInfo * info,
         /* FIXME : Figure out */
         GST_FIXME_OBJECT (pad, "EOS on multiqueue source pad. input:%p",
             slot->input);
+        slot->is_drained = TRUE;
         if (slot->input == NULL) {
           GstPad *peer;
           GST_DEBUG_OBJECT (pad,
@@ -1510,8 +1583,34 @@ multiqueue_src_probe (GstPad * pad, GstPadProbeInfo * info,
             dbin->output_streams = g_list_remove (dbin->output_streams, output);
             free_output_stream (dbin, output);
           }
+          slot->probe_id = 0;
+          dbin->slots = g_list_remove (dbin->slots, slot);
+          free_multiqueue_slot_async (dbin, slot);
           SELECTION_UNLOCK (dbin);
-          ret = GST_PAD_PROBE_HANDLED;
+          ret = GST_PAD_PROBE_REMOVE;
+        }
+        break;
+      case GST_EVENT_CUSTOM_DOWNSTREAM:
+        if (gst_event_has_name (ev, "decodebin3-custom-eos")) {
+          slot->is_drained = TRUE;
+          ret = GST_PAD_PROBE_DROP;
+          SELECTION_LOCK (dbin);
+          if (slot->input == NULL) {
+            GST_DEBUG_OBJECT (pad,
+                "Got custom-eos from null input stream, remove output stream");
+            /* Remove the output */
+            if (slot->output) {
+              DecodebinOutputStream *output = slot->output;
+              dbin->output_streams =
+                  g_list_remove (dbin->output_streams, output);
+              free_output_stream (dbin, output);
+            }
+            slot->probe_id = 0;
+            dbin->slots = g_list_remove (dbin->slots, slot);
+            free_multiqueue_slot_async (dbin, slot);
+            ret = GST_PAD_PROBE_REMOVE;
+          }
+          SELECTION_UNLOCK (dbin);
         }
         break;
       default:
@@ -2030,7 +2129,7 @@ reassign_slot (GstDecodebin3 * dbin, MultiQueueSlot * slot)
       tsid = tmp->data;
       /* Pass target stream id to requested selection */
       dbin->requested_selection =
-          g_list_append (dbin->requested_selection, tmp->data);
+          g_list_append (dbin->requested_selection, g_strdup (tmp->data));
       dbin->to_activate = g_list_remove (dbin->to_activate, tmp->data);
       break;
     }
@@ -2159,7 +2258,9 @@ handle_stream_switch (GstDecodebin3 * dbin, GList * select_streams,
       if (slot_to_deactivate) {
         GST_DEBUG_OBJECT (dbin,
             "Slot %p (%s) should be deactivated, no longer used", slot,
-            gst_stream_get_stream_id (slot->active_stream));
+            slot->
+            active_stream ? gst_stream_get_stream_id (slot->active_stream) :
+            "NULL");
         to_deactivate = g_list_append (to_deactivate, slot);
       }
     }
@@ -2228,27 +2329,33 @@ handle_stream_switch (GstDecodebin3 * dbin, GList * select_streams,
   if (to_activate == NULL && pending_streams != NULL) {
     GST_DEBUG_OBJECT (dbin, "Stream switch requested for future collection");
     if (dbin->requested_selection)
-      g_list_free (dbin->requested_selection);
-    dbin->requested_selection = select_streams;
+      g_list_free_full (dbin->requested_selection, g_free);
+    dbin->requested_selection =
+        g_list_copy_deep (select_streams, (GCopyFunc) g_strdup, NULL);
     g_list_free (to_deactivate);
     g_list_free (pending_streams);
     to_deactivate = NULL;
+    pending_streams = NULL;
   } else {
     if (dbin->requested_selection)
-      g_list_free (dbin->requested_selection);
-    dbin->requested_selection = future_request_streams;
+      g_list_free_full (dbin->requested_selection, g_free);
     dbin->requested_selection =
-        g_list_concat (dbin->requested_selection, pending_streams);
+        g_list_copy_deep (future_request_streams, (GCopyFunc) g_strdup, NULL);
+    dbin->requested_selection =
+        g_list_concat (dbin->requested_selection,
+        g_list_copy_deep (pending_streams, (GCopyFunc) g_strdup, NULL));
     if (dbin->to_activate)
       g_list_free (dbin->to_activate);
-    dbin->to_activate = to_reassign;
+    dbin->to_activate = g_list_copy (to_reassign);
   }
 
   dbin->selection_updated = TRUE;
   SELECTION_UNLOCK (dbin);
 
-  if (unknown)
+  if (unknown) {
     GST_FIXME_OBJECT (dbin, "Got request for an unknown stream");
+    g_list_free (unknown);
+  }
 
   /* For all streams to deactivate, add an idle probe where we will do
    * the unassignment and switch over */
@@ -2257,6 +2364,19 @@ handle_stream_switch (GstDecodebin3 * dbin, GList * select_streams,
     gst_pad_add_probe (slot->src_pad, GST_PAD_PROBE_TYPE_IDLE,
         (GstPadProbeCallback) slot_unassign_probe, slot, NULL);
   }
+
+  if (to_deactivate)
+    g_list_free (to_deactivate);
+  if (to_activate)
+    g_list_free (to_activate);
+  if (to_reassign)
+    g_list_free (to_reassign);
+  if (future_request_streams)
+    g_list_free (future_request_streams);
+  if (pending_streams)
+    g_list_free (pending_streams);
+  if (slots_to_reassign)
+    g_list_free (slots_to_reassign);
 
   return ret;
 }
@@ -2303,8 +2423,10 @@ ghost_pad_event_probe (GstPad * pad, GstPadProbeInfo * info,
         gst_event_unref (event);
       }
       /* Finally handle the switch */
-      if (streams)
+      if (streams) {
         handle_stream_switch (dbin, streams, seqnum);
+        g_list_free_full (streams, g_free);
+      }
       ret = GST_PAD_PROBE_HANDLED;
     }
       break;
@@ -2350,8 +2472,10 @@ gst_decodebin3_send_event (GstElement * element, GstEvent * event)
     }
 #endif
     /* Finally handle the switch */
-    if (streams)
+    if (streams) {
       handle_stream_switch (dbin, streams, seqnum);
+      g_list_free_full (streams, g_free);
+    }
 
     gst_event_unref (event);
     return TRUE;
@@ -2375,6 +2499,14 @@ free_multiqueue_slot (GstDecodebin3 * dbin, MultiQueueSlot * slot)
   gst_object_replace ((GstObject **) & slot->src_pad, NULL);
   gst_object_replace ((GstObject **) & slot->active_stream, NULL);
   g_free (slot);
+}
+
+static void
+free_multiqueue_slot_async (GstDecodebin3 * dbin, MultiQueueSlot * slot)
+{
+  GST_LOG_OBJECT (dbin, "pushing multiqueue slot on thread pool to free");
+  gst_element_call_async (GST_ELEMENT_CAST (dbin),
+      (GstElementCallAsyncFunc) free_multiqueue_slot, slot, NULL);
 }
 
 /* Create a DecodebinOutputStream for a given type

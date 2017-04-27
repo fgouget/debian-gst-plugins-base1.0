@@ -129,12 +129,12 @@
 <div class="refsect1">
 <a name="gst-plugins-base-plugins-multifdsink.description"></a><h2>Description</h2>
 <p>This plugin writes incoming data to a set of file descriptors. The
-file descriptors can be added to multifdsink by emitting the <a class="link" href="gst-plugins-base-plugins-multifdsink.html#GstMultiFdSink-add" title="The “add” signal"><span class="type">“add”</span></a> signal. 
+file descriptors can be added to multifdsink by emitting the <a class="link" href="gst-plugins-base-plugins-multifdsink.html#GstMultiFdSink-add" title="The “add” signal"><span class="type">“add”</span></a> signal.
 For each descriptor added, the <a class="link" href="gst-plugins-base-plugins-multifdsink.html#GstMultiFdSink-client-added" title="The “client-added” signal"><span class="type">“client-added”</span></a> signal will be called.</p>
 <p>The multifdsink element needs to be set into READY, PAUSED or PLAYING state
 before operations such as adding clients are possible.</p>
 <p>A client can also be added with the <a class="link" href="gst-plugins-base-plugins-multifdsink.html#GstMultiFdSink-add-full" title="The “add-full” signal"><span class="type">“add-full”</span></a> signal
-that allows for more control over what and how much data a client 
+that allows for more control over what and how much data a client
 initially receives.</p>
 <p>Clients can be removed from multifdsink by emitting the <a class="link" href="gst-plugins-base-plugins-multifdsink.html#GstMultiFdSink-remove" title="The “remove” signal"><span class="type">“remove”</span></a> signal. For
 each descriptor removed, the <a class="link" href="gst-plugins-base-plugins-multifdsink.html#GstMultiFdSink-client-removed" title="The “client-removed” signal"><span class="type">“client-removed”</span></a> signal will be called. The
@@ -147,38 +147,38 @@ This can for example be done in response to the <a class="link" href="gst-plugin
 Note that multifdsink still has a reference to the file descriptor when the
 <a class="link" href="gst-plugins-base-plugins-multifdsink.html#GstMultiFdSink-client-removed" title="The “client-removed” signal"><span class="type">“client-removed”</span></a> signal is emitted, so that "get-stats" can be performed on
 the descriptor; it is therefore not safe to close the file descriptor in
-the <a class="link" href="gst-plugins-base-plugins-multifdsink.html#GstMultiFdSink-client-removed" title="The “client-removed” signal"><span class="type">“client-removed”</span></a> signal handler, and you should use the 
+the <a class="link" href="gst-plugins-base-plugins-multifdsink.html#GstMultiFdSink-client-removed" title="The “client-removed” signal"><span class="type">“client-removed”</span></a> signal handler, and you should use the
 <a class="link" href="gst-plugins-base-plugins-multifdsink.html#GstMultiFdSink-client-fd-removed" title="The “client-fd-removed” signal"><span class="type">“client-fd-removed”</span></a> signal to safely close the fd.</p>
 <p>Multifdsink internally keeps a queue of the incoming buffers and uses a
 separate thread to send the buffers to the clients. This ensures that no
 client write can block the pipeline and that clients can read with different
 speeds.</p>
 <p>When adding a client to multifdsink, the <span class="type">“sync-method”</span> property will define
-which buffer in the queued buffers will be sent first to the client. Clients 
-can be sent the most recent buffer (which might not be decodable by the 
-client if it is not a keyframe), the next keyframe received in 
+which buffer in the queued buffers will be sent first to the client. Clients
+can be sent the most recent buffer (which might not be decodable by the
+client if it is not a keyframe), the next keyframe received in
 multifdsink (which can take some time depending on the keyframe rate), or the
-last received keyframe (which will cause a simple burst-on-connect). 
+last received keyframe (which will cause a simple burst-on-connect).
 Multifdsink will always keep at least one keyframe in its internal buffers
 when the sync-mode is set to latest-keyframe.</p>
 <p>There are additional values for the <span class="type">“sync-method”</span>
 property to allow finer control over burst-on-connect behaviour. By selecting
 the 'burst' method a minimum burst size can be chosen, 'burst-keyframe'
-additionally requires that the burst begin with a keyframe, and 
+additionally requires that the burst begin with a keyframe, and
 'burst-with-keyframe' attempts to burst beginning with a keyframe, but will
 prefer a minimum burst size even if it requires not starting with a keyframe.</p>
 <p>Multifdsink can be instructed to keep at least a minimum amount of data
-expressed in time or byte units in its internal queues with the 
+expressed in time or byte units in its internal queues with the
 <span class="type">“time-min”</span> and <span class="type">“bytes-min”</span> properties respectively.
-These properties are useful if the application adds clients with the 
+These properties are useful if the application adds clients with the
 <a class="link" href="gst-plugins-base-plugins-multifdsink.html#GstMultiFdSink-add-full" title="The “add-full” signal"><span class="type">“add-full”</span></a> signal to make sure that a burst connect can
-actually be honored. </p>
+actually be honored.</p>
 <p>When streaming data, clients are allowed to read at a different rate than
 the rate at which multifdsink receives data. If the client is reading too
 fast, no data will be send to the client until multifdsink receives more
-data. If the client, however, reads too slowly, data for that client will be 
-queued up in multifdsink. Two properties control the amount of data 
-(buffers) that is queued in multifdsink: <span class="type">“buffers-max”</span> and 
+data. If the client, however, reads too slowly, data for that client will be
+queued up in multifdsink. Two properties control the amount of data
+(buffers) that is queued in multifdsink: <span class="type">“buffers-max”</span> and
 <span class="type">“buffers-soft-max”</span>. A client that falls behind by
 <span class="type">“buffers-max”</span> is removed from multifdsink forcibly.</p>
 <p>A client with a lag of at least <span class="type">“buffers-soft-max”</span> enters the recovery
@@ -188,8 +188,8 @@ received buffer as the next buffer for the client, RESYNC_SOFT_LIMIT
 positions the client to the soft limit in the buffer queue and
 RESYNC_KEYFRAME positions the client at the most recent keyframe in the
 buffer queue.</p>
-<p>multifdsink will by default synchronize on the clock before serving the 
-buffers to the clients. This behaviour can be disabled by setting the sync 
+<p>multifdsink will by default synchronize on the clock before serving the
+buffers to the clients. This behaviour can be disabled by setting the sync
 property to FALSE. Multifdsink will by default not do QoS and will never
 drop late buffers.</p>
 <div class="refsynopsisdiv">
@@ -527,7 +527,7 @@ user_function (<a class="link" href="gst-plugins-base-plugins-multifdsink.html#G
                <a href="/usr/share/gtk-doc/html/glibglib-Basic-Types.html#gint"><span class="type">gint</span></a>            fd,
                <a href="/usr/share/gtk-doc/html/glibglib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>        user_data)</pre>
 <p>Get statistics about <em class="parameter"><code>fd</code></em>
-. This function returns a GValueArray to ease
+. This function returns a <a href="/usr/share/gtk-doc/html/gstreamer-1.0GstStructure.html#GstStructure-struct"><span class="type">GstStructure</span></a> to ease
 automatic wrapping for bindings.</p>
 <div class="refsect3">
 <a name="GstMultiFdSink-get-stats.parameters"></a><h4>Parameters</h4>
@@ -558,13 +558,17 @@ automatic wrapping for bindings.</p>
 </div>
 <div class="refsect3">
 <a name="GstMultiFdSink-get-stats.returns"></a><h4>Returns</h4>
-<p> a GValueArray with the statistics. The array contains guint64
-values that represent respectively: total number of bytes sent, time
-when the client was added, time when the client was
-disconnected/removed, time the client is/was active, last activity
-time (in epoch seconds), number of buffers dropped.
-All times are expressed in nanoseconds (GstClockTime).
-The array can be 0-length if the client was not found.</p>
+<p> a <a href="/usr/share/gtk-doc/html/gstreamer-1.0GstStructure.html#GstStructure-struct"><span class="type">GstStructure</span></a> with the statistics. The structures
+contains guint64 values that represent respectively: total
+number of bytes sent (bytes-sent), time when the client was
+added (connect-time), time when the client was
+disconnected/removed (disconnect-time), time the client
+is/was active (connect-duration), last activity time (in
+epoch seconds) (last-activity-time), number of buffers
+dropped (buffers-dropped), the timestamp of the first buffer
+(first-buffer-ts) and of the last buffer (last-buffer-ts).
+All times are expressed in nanoseconds (GstClockTime).  The
+structure can be empty if the client was not found.</p>
 </div>
 <p>Flags: <a href="/usr/share/gtk-doc/html/gobjectgobject-Signals.html#G-SIGNAL-ACTION:CAPS">Action</a></p>
 </div>

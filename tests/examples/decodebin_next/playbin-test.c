@@ -155,6 +155,7 @@ switch_streams (MyDataStruct * data)
 
   ev = gst_event_new_select_streams (streams);
   gst_element_send_event (data->pipeline, ev);
+  g_list_free (streams);
 
   return G_SOURCE_CONTINUE;
 }
@@ -283,7 +284,7 @@ main (int argc, gchar ** argv)
     return 1;
   }
 
-  g_object_set (data->pipeline, "uri", uri, "auto-select-streams", FALSE, NULL);
+  g_object_set (data->pipeline, "uri", uri, NULL);
   g_free (uri);
 
 #if 0

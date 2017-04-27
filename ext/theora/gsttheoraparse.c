@@ -20,6 +20,7 @@
 
 /**
  * SECTION:element-theoraparse
+ * @title: theoraparse
  * @see_also: theoradec, oggdemux, vorbisparse
  *
  * The theoraparse element will parse the header packets of the Theora
@@ -40,18 +41,19 @@
  * offsetting all buffers that it outputs by a specified amount, and updating
  * that offset from the value array whenever a keyframe is processed.
  *
- * <refsect2>
- * <title>Example pipelines</title>
+ * ## Example pipelines
  * |[
  * gst-launch-1.0 -v filesrc location=video.ogg ! oggdemux ! theoraparse ! fakesink
- * ]| This pipeline shows that the streamheader is set in the caps, and that each
+ * ]|
+ *  This pipeline shows that the streamheader is set in the caps, and that each
  * buffer has the timestamp, duration, offset, and offset_end set.
  * |[
  * gst-launch-1.0 filesrc location=video.ogg ! oggdemux ! theoraparse \
  *            ! oggmux ! filesink location=video-remuxed.ogg
- * ]| This pipeline shows remuxing. video-remuxed.ogg might not be exactly the same
+ * ]|
+ *  This pipeline shows remuxing. video-remuxed.ogg might not be exactly the same
  * as video.ogg, but they should produce exactly the same decoded data.
- * </refsect2>
+ *
  */
 
 /* FIXME 0.11: suppress warnings for deprecated API such as GValueArray
@@ -322,7 +324,7 @@ theora_parse_set_streamheader (GstTheoraParse * parse)
     ret = th_decode_headerin (&parse->info, &parse->comment, &setup, &packet);
     gst_buffer_unmap (buf, &map);
     if (ret < 0) {
-      GST_WARNING_OBJECT (parse, "Failed to decode Theora header %d: %d\n",
+      GST_WARNING_OBJECT (parse, "Failed to decode Theora header %d: %d",
           i + 1, ret);
     }
   }

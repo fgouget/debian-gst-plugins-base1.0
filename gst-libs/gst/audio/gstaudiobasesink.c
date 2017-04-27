@@ -22,6 +22,7 @@
 
 /**
  * SECTION:gstaudiobasesink
+ * @title: GstAudioBaseSink
  * @short_description: Base class for audio sinks
  * @see_also: #GstAudioSink, #GstAudioRingBuffer.
  *
@@ -119,30 +120,6 @@ enum
 
   PROP_LAST
 };
-
-GType
-gst_audio_base_sink_slave_method_get_type (void)
-{
-  static volatile gsize slave_method_type = 0;
-  static const GEnumValue slave_method[] = {
-    {GST_AUDIO_BASE_SINK_SLAVE_RESAMPLE, "GST_AUDIO_BASE_SINK_SLAVE_RESAMPLE",
-        "resample"},
-    {GST_AUDIO_BASE_SINK_SLAVE_SKEW, "GST_AUDIO_BASE_SINK_SLAVE_SKEW", "skew"},
-    {GST_AUDIO_BASE_SINK_SLAVE_NONE, "GST_AUDIO_BASE_SINK_SLAVE_NONE", "none"},
-    {GST_AUDIO_BASE_SINK_SLAVE_CUSTOM, "GST_AUDIO_BASE_SINK_SLAVE_CUSTOM",
-        "custom"},
-    {0, NULL, NULL},
-  };
-
-  if (g_once_init_enter (&slave_method_type)) {
-    GType tmp =
-        g_enum_register_static ("GstAudioBaseSinkSlaveMethod", slave_method);
-    g_once_init_leave (&slave_method_type, tmp);
-  }
-
-  return (GType) slave_method_type;
-}
-
 
 #define _do_init \
     GST_DEBUG_CATEGORY_INIT (gst_audio_base_sink_debug, "audiobasesink", 0, "audiobasesink element");
@@ -341,7 +318,7 @@ gst_audio_base_sink_dispose (GObject * object)
     sink->priv->custom_slaving_cb_notify (sink->priv->custom_slaving_cb_data);
 
   if (sink->provided_clock) {
-    gst_audio_clock_invalidate (sink->provided_clock);
+    gst_audio_clock_invalidate (GST_AUDIO_CLOCK (sink->provided_clock));
     gst_object_unref (sink->provided_clock);
     sink->provided_clock = NULL;
   }
@@ -1295,8 +1272,9 @@ gst_audio_base_sink_custom_slaving (GstAudioBaseSink * sink,
 
   /* sample clocks and figure out clock skew */
   etime = gst_clock_get_time (GST_ELEMENT_CLOCK (sink));
-  itime = gst_audio_clock_get_time (sink->provided_clock);
-  itime = gst_audio_clock_adjust (sink->provided_clock, itime);
+  itime = gst_audio_clock_get_time (GST_AUDIO_CLOCK (sink->provided_clock));
+  itime =
+      gst_audio_clock_adjust (GST_AUDIO_CLOCK (sink->provided_clock), itime);
 
   GST_DEBUG_OBJECT (sink,
       "internal %" GST_TIME_FORMAT " external %" GST_TIME_FORMAT
@@ -1442,8 +1420,9 @@ gst_audio_base_sink_skew_slaving (GstAudioBaseSink * sink,
 
   /* sample clocks and figure out clock skew */
   etime = gst_clock_get_time (GST_ELEMENT_CLOCK (sink));
-  itime = gst_audio_clock_get_time (sink->provided_clock);
-  itime = gst_audio_clock_adjust (sink->provided_clock, itime);
+  itime = gst_audio_clock_get_time (GST_AUDIO_CLOCK (sink->provided_clock));
+  itime =
+      gst_audio_clock_adjust (GST_AUDIO_CLOCK (sink->provided_clock), itime);
 
   GST_DEBUG_OBJECT (sink,
       "internal %" GST_TIME_FORMAT " external %" GST_TIME_FORMAT
@@ -1668,8 +1647,9 @@ gst_audio_base_sink_sync_latency (GstBaseSink * bsink, GstMiniObject * obj)
 
   /* We might need to take the object lock within gst_audio_clock_get_time(),
    * so call that before we take it again */
-  itime = gst_audio_clock_get_time (sink->provided_clock);
-  itime = gst_audio_clock_adjust (sink->provided_clock, itime);
+  itime = gst_audio_clock_get_time (GST_AUDIO_CLOCK (sink->provided_clock));
+  itime =
+      gst_audio_clock_adjust (GST_AUDIO_CLOCK (sink->provided_clock), itime);
 
   GST_OBJECT_LOCK (sink);
 

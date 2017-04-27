@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
-<book xmlns="http://www.devhelp.net/book" title="GStreamer Base Plugins 1.0 Plugins Reference Manual" link="index.html" author="" name="gst-plugins-base-plugins-1.0" version="2" language="c" online="http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gst-plugins-base/html/">
+<book xmlns="http://www.devhelp.net/book" title="GStreamer Base Plugins 1.0 Plugins Reference Manual" link="index.html" author="" name="gst-plugins-base-plugins-1.0" version="2" language="c" online="http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gst-plugins-base-plugins/html/">
   <chapters>
     <sub name="gst-plugins-base Elements" link="ch01.html">
       <sub name="adder" link="gst-plugins-base-plugins-adder.html"/>
@@ -36,6 +36,8 @@
       <sub name="playbin" link="gst-plugins-base-plugins-playbin.html"/>
       <sub name="playbin3" link="gst-plugins-base-plugins-playbin3.html"/>
       <sub name="playsink" link="gst-plugins-base-plugins-playsink.html"/>
+      <sub name="rawaudioparse" link="gst-plugins-base-plugins-rawaudioparse.html"/>
+      <sub name="rawvideoparse" link="gst-plugins-base-plugins-rawvideoparse.html"/>
       <sub name="socketsrc" link="gst-plugins-base-plugins-socketsrc.html"/>
       <sub name="ssaparse" link="gst-plugins-base-plugins-ssaparse.html"/>
       <sub name="streamsynchronizer" link="gst-plugins-base-plugins-streamsynchronizer.html"/>
@@ -51,6 +53,8 @@
       <sub name="theoraenc" link="gst-plugins-base-plugins-theoraenc.html"/>
       <sub name="theoraparse" link="gst-plugins-base-plugins-theoraparse.html"/>
       <sub name="timeoverlay" link="gst-plugins-base-plugins-timeoverlay.html"/>
+      <sub name="unalignedaudioparse" link="gst-plugins-base-plugins-unalignedaudioparse.html"/>
+      <sub name="unalignedvideoparse" link="gst-plugins-base-plugins-unalignedvideoparse.html"/>
       <sub name="uridecodebin" link="gst-plugins-base-plugins-uridecodebin.html"/>
       <sub name="urisourcebin" link="gst-plugins-base-plugins-urisourcebin.html"/>
       <sub name="videoconvert" link="gst-plugins-base-plugins-videoconvert.html"/>
@@ -82,6 +86,7 @@
       <sub name="opus" link="gst-plugins-base-plugins-plugin-opus.html"/>
       <sub name="pango" link="gst-plugins-base-plugins-plugin-pango.html"/>
       <sub name="playback" link="gst-plugins-base-plugins-plugin-playback.html"/>
+      <sub name="rawparse" link="gst-plugins-base-plugins-plugin-rawparse.html"/>
       <sub name="subparse" link="gst-plugins-base-plugins-plugin-subparse.html"/>
       <sub name="tcp" link="gst-plugins-base-plugins-plugin-tcp.html"/>
       <sub name="theora" link="gst-plugins-base-plugins-plugin-theora.html"/>
@@ -112,6 +117,7 @@
     <keyword type="property" name="The “eos” property" link="gst-plugins-base-plugins-appsink.html#GstAppSink--eos"/>
     <keyword type="property" name="The “max-buffers” property" link="gst-plugins-base-plugins-appsink.html#GstAppSink--max-buffers"/>
     <keyword type="property" name="The “wait-on-eos” property" link="gst-plugins-base-plugins-appsink.html#GstAppSink--wait-on-eos"/>
+    <keyword type="property" name="The “buffer-list” property" link="gst-plugins-base-plugins-appsink.html#GstAppSink--buffer-list"/>
     <keyword type="signal" name="The “eos” signal" link="gst-plugins-base-plugins-appsink.html#GstAppSink-eos"/>
     <keyword type="signal" name="The “new-preroll” signal" link="gst-plugins-base-plugins-appsink.html#GstAppSink-new-preroll"/>
     <keyword type="signal" name="The “new-sample” signal" link="gst-plugins-base-plugins-appsink.html#GstAppSink-new-sample"/>
@@ -334,6 +340,20 @@
     <keyword type="property" name="The “video-filter” property" link="gst-plugins-base-plugins-playsink.html#GstPlaySink--video-filter"/>
     <keyword type="signal" name="The “convert-sample” signal" link="gst-plugins-base-plugins-playsink.html#GstPlaySink-convert-sample"/>
     <keyword type="signal" name="The “reconfigure” signal" link="gst-plugins-base-plugins-playsink.html#GstPlaySink-reconfigure"/>
+    <keyword type="struct" name="struct GstRawAudioParse" link="gst-plugins-base-plugins-rawaudioparse.html#GstRawAudioParse-struct"/>
+    <keyword type="property" name="The “channel-positions” property" link="gst-plugins-base-plugins-rawaudioparse.html#GstRawAudioParse--channel-positions"/>
+    <keyword type="property" name="The “format” property" link="gst-plugins-base-plugins-rawaudioparse.html#GstRawAudioParse--format"/>
+    <keyword type="property" name="The “interleaved” property" link="gst-plugins-base-plugins-rawaudioparse.html#GstRawAudioParse--interleaved"/>
+    <keyword type="property" name="The “num-channels” property" link="gst-plugins-base-plugins-rawaudioparse.html#GstRawAudioParse--num-channels"/>
+    <keyword type="property" name="The “pcm-format” property" link="gst-plugins-base-plugins-rawaudioparse.html#GstRawAudioParse--pcm-format"/>
+    <keyword type="property" name="The “sample-rate” property" link="gst-plugins-base-plugins-rawaudioparse.html#GstRawAudioParse--sample-rate"/>
+    <keyword type="struct" name="struct GstRawAudioParse" link="gst-plugins-base-plugins-rawvideoparse.html#GstRawAudioParse-struct"/>
+    <keyword type="property" name="The “channel-positions” property" link="gst-plugins-base-plugins-rawvideoparse.html#GstRawAudioParse--channel-positions"/>
+    <keyword type="property" name="The “format” property" link="gst-plugins-base-plugins-rawvideoparse.html#GstRawAudioParse--format"/>
+    <keyword type="property" name="The “interleaved” property" link="gst-plugins-base-plugins-rawvideoparse.html#GstRawAudioParse--interleaved"/>
+    <keyword type="property" name="The “num-channels” property" link="gst-plugins-base-plugins-rawvideoparse.html#GstRawAudioParse--num-channels"/>
+    <keyword type="property" name="The “pcm-format” property" link="gst-plugins-base-plugins-rawvideoparse.html#GstRawAudioParse--pcm-format"/>
+    <keyword type="property" name="The “sample-rate” property" link="gst-plugins-base-plugins-rawvideoparse.html#GstRawAudioParse--sample-rate"/>
     <keyword type="struct" name="struct GstSocketSrc" link="gst-plugins-base-plugins-socketsrc.html#GstSocketSrc-struct"/>
     <keyword type="property" name="The “socket” property" link="gst-plugins-base-plugins-socketsrc.html#GstSocketSrc--socket"/>
     <keyword type="property" name="The “caps” property" link="gst-plugins-base-plugins-socketsrc.html#GstSocketSrc--caps"/>
@@ -354,6 +374,7 @@
     <keyword type="struct" name="struct GstTCPClientSrc" link="gst-plugins-base-plugins-tcpclientsrc.html#GstTCPClientSrc-struct"/>
     <keyword type="property" name="The “host” property" link="gst-plugins-base-plugins-tcpclientsrc.html#GstTCPClientSrc--host"/>
     <keyword type="property" name="The “port” property" link="gst-plugins-base-plugins-tcpclientsrc.html#GstTCPClientSrc--port"/>
+    <keyword type="property" name="The “timeout” property" link="gst-plugins-base-plugins-tcpclientsrc.html#GstTCPClientSrc--timeout"/>
     <keyword type="struct" name="struct GstTCPServerSink" link="gst-plugins-base-plugins-tcpserversink.html#GstTCPServerSink-struct"/>
     <keyword type="property" name="The “current-port” property" link="gst-plugins-base-plugins-tcpserversink.html#GstTCPServerSink--current-port"/>
     <keyword type="property" name="The “host” property" link="gst-plugins-base-plugins-tcpserversink.html#GstTCPServerSink--host"/>
@@ -397,6 +418,20 @@
     <keyword type="struct" name="struct GstTimeOverlay" link="gst-plugins-base-plugins-timeoverlay.html#GstTimeOverlay-struct"/>
     <keyword type="enum" name="enum GstTimeOverlayTimeLine" link="gst-plugins-base-plugins-timeoverlay.html#GstTimeOverlayTimeLine"/>
     <keyword type="property" name="The “time-mode” property" link="gst-plugins-base-plugins-timeoverlay.html#GstTimeOverlay--time-mode"/>
+    <keyword type="struct" name="struct GstRawAudioParse" link="gst-plugins-base-plugins-unalignedaudioparse.html#GstRawAudioParse-struct"/>
+    <keyword type="property" name="The “channel-positions” property" link="gst-plugins-base-plugins-unalignedaudioparse.html#GstRawAudioParse--channel-positions"/>
+    <keyword type="property" name="The “format” property" link="gst-plugins-base-plugins-unalignedaudioparse.html#GstRawAudioParse--format"/>
+    <keyword type="property" name="The “interleaved” property" link="gst-plugins-base-plugins-unalignedaudioparse.html#GstRawAudioParse--interleaved"/>
+    <keyword type="property" name="The “num-channels” property" link="gst-plugins-base-plugins-unalignedaudioparse.html#GstRawAudioParse--num-channels"/>
+    <keyword type="property" name="The “pcm-format” property" link="gst-plugins-base-plugins-unalignedaudioparse.html#GstRawAudioParse--pcm-format"/>
+    <keyword type="property" name="The “sample-rate” property" link="gst-plugins-base-plugins-unalignedaudioparse.html#GstRawAudioParse--sample-rate"/>
+    <keyword type="struct" name="struct GstRawAudioParse" link="gst-plugins-base-plugins-unalignedvideoparse.html#GstRawAudioParse-struct"/>
+    <keyword type="property" name="The “channel-positions” property" link="gst-plugins-base-plugins-unalignedvideoparse.html#GstRawAudioParse--channel-positions"/>
+    <keyword type="property" name="The “format” property" link="gst-plugins-base-plugins-unalignedvideoparse.html#GstRawAudioParse--format"/>
+    <keyword type="property" name="The “interleaved” property" link="gst-plugins-base-plugins-unalignedvideoparse.html#GstRawAudioParse--interleaved"/>
+    <keyword type="property" name="The “num-channels” property" link="gst-plugins-base-plugins-unalignedvideoparse.html#GstRawAudioParse--num-channels"/>
+    <keyword type="property" name="The “pcm-format” property" link="gst-plugins-base-plugins-unalignedvideoparse.html#GstRawAudioParse--pcm-format"/>
+    <keyword type="property" name="The “sample-rate” property" link="gst-plugins-base-plugins-unalignedvideoparse.html#GstRawAudioParse--sample-rate"/>
     <keyword type="struct" name="struct GstURIDecodeBin" link="gst-plugins-base-plugins-uridecodebin.html#GstURIDecodeBin-struct"/>
     <keyword type="property" name="The “buffer-duration” property" link="gst-plugins-base-plugins-uridecodebin.html#GstURIDecodeBin--buffer-duration"/>
     <keyword type="property" name="The “buffer-size” property" link="gst-plugins-base-plugins-uridecodebin.html#GstURIDecodeBin--buffer-size"/>
@@ -427,6 +462,7 @@
     <keyword type="property" name="The “gamma-mode” property" link="gst-plugins-base-plugins-videoconvert.html#GstVideoConvert--gamma-mode"/>
     <keyword type="property" name="The “matrix-mode” property" link="gst-plugins-base-plugins-videoconvert.html#GstVideoConvert--matrix-mode"/>
     <keyword type="property" name="The “primaries-mode” property" link="gst-plugins-base-plugins-videoconvert.html#GstVideoConvert--primaries-mode"/>
+    <keyword type="property" name="The “n-threads” property" link="gst-plugins-base-plugins-videoconvert.html#GstVideoConvert--n-threads"/>
     <keyword type="struct" name="struct GstVideoRate" link="gst-plugins-base-plugins-videorate.html#GstVideoRate-struct"/>
     <keyword type="property" name="The “average-period” property" link="gst-plugins-base-plugins-videorate.html#GstVideoRate--average-period"/>
     <keyword type="property" name="The “drop” property" link="gst-plugins-base-plugins-videorate.html#GstVideoRate--drop"/>
@@ -438,6 +474,7 @@
     <keyword type="property" name="The “out” property" link="gst-plugins-base-plugins-videorate.html#GstVideoRate--out"/>
     <keyword type="property" name="The “silent” property" link="gst-plugins-base-plugins-videorate.html#GstVideoRate--silent"/>
     <keyword type="property" name="The “skip-to-first” property" link="gst-plugins-base-plugins-videorate.html#GstVideoRate--skip-to-first"/>
+    <keyword type="property" name="The “rate” property" link="gst-plugins-base-plugins-videorate.html#GstVideoRate--rate"/>
     <keyword type="struct" name="struct GstVideoScale" link="gst-plugins-base-plugins-videoscale.html#GstVideoScale-struct"/>
     <keyword type="enum" name="enum GstVideoScaleMethod" link="gst-plugins-base-plugins-videoscale.html#GstVideoScaleMethod"/>
     <keyword type="property" name="The “add-borders” property" link="gst-plugins-base-plugins-videoscale.html#GstVideoScale--add-borders"/>
@@ -447,6 +484,7 @@
     <keyword type="property" name="The “sharpen” property" link="gst-plugins-base-plugins-videoscale.html#GstVideoScale--sharpen"/>
     <keyword type="property" name="The “sharpness” property" link="gst-plugins-base-plugins-videoscale.html#GstVideoScale--sharpness"/>
     <keyword type="property" name="The “gamma-decode” property" link="gst-plugins-base-plugins-videoscale.html#GstVideoScale--gamma-decode"/>
+    <keyword type="property" name="The “n-threads” property" link="gst-plugins-base-plugins-videoscale.html#GstVideoScale--n-threads"/>
     <keyword type="struct" name="struct GstVideoTestSrc" link="gst-plugins-base-plugins-videotestsrc.html#GstVideoTestSrc-struct"/>
     <keyword type="enum" name="enum GstVideoTestSrcPattern" link="gst-plugins-base-plugins-videotestsrc.html#GstVideoTestSrcPattern"/>
     <keyword type="property" name="The “background-color” property" link="gst-plugins-base-plugins-videotestsrc.html#GstVideoTestSrc--background-color"/>
@@ -467,6 +505,9 @@
     <keyword type="property" name="The “timestamp-offset” property" link="gst-plugins-base-plugins-videotestsrc.html#GstVideoTestSrc--timestamp-offset"/>
     <keyword type="property" name="The “xoffset” property" link="gst-plugins-base-plugins-videotestsrc.html#GstVideoTestSrc--xoffset"/>
     <keyword type="property" name="The “yoffset” property" link="gst-plugins-base-plugins-videotestsrc.html#GstVideoTestSrc--yoffset"/>
+    <keyword type="property" name="The “animation-mode” property" link="gst-plugins-base-plugins-videotestsrc.html#GstVideoTestSrc--animation-mode"/>
+    <keyword type="property" name="The “flip” property" link="gst-plugins-base-plugins-videotestsrc.html#GstVideoTestSrc--flip"/>
+    <keyword type="property" name="The “motion” property" link="gst-plugins-base-plugins-videotestsrc.html#GstVideoTestSrc--motion"/>
     <keyword type="struct" name="struct GstVolume" link="gst-plugins-base-plugins-volume.html#GstVolume-struct"/>
     <keyword type="property" name="The “mute” property" link="gst-plugins-base-plugins-volume.html#GstVolume--mute"/>
     <keyword type="property" name="The “volume” property" link="gst-plugins-base-plugins-volume.html#GstVolume--volume"/>

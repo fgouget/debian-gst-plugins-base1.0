@@ -61,7 +61,7 @@
 </tr>
 <tr>
 <td class="property_type">
-<a href="../html/gst-plugins-base-libs-encoding-profile.html#GstEncodingProfile-struct"><span class="type">GstEncodingProfile</span></a> *</td>
+<a href="../html/GstEncodingProfile.html#GstEncodingProfile-struct"><span class="type">GstEncodingProfile</span></a> *</td>
 <td class="property_name"><a class="link" href="gst-plugins-base-plugins-encodebin.html#GstEncodeBin--profile" title="The “profile” property">profile</a></td>
 <td class="property_flags">Read / Write</td>
 </tr>
@@ -139,71 +139,51 @@ GstEncodeBin implements
 <div class="refsect1">
 <a name="gst-plugins-base-plugins-encodebin.description"></a><h2>Description</h2>
 <p>EncodeBin provides a bin for encoding/muxing various streams according to
-a specified <a href="../html/gst-plugins-base-libs-encoding-profile.html#GstEncodingProfile-struct"><span class="type">GstEncodingProfile</span></a>.</p>
+a specified <a href="../html/GstEncodingProfile.html#GstEncodingProfile-struct"><span class="type">GstEncodingProfile</span></a>.</p>
 <p>Based on the profile that was set (via the <a class="link" href="gst-plugins-base-plugins-encodebin.html#GstEncodeBin--profile" title="The “profile” property"><span class="type">“profile”</span></a> property),
 EncodeBin will internally select and configure the required elements
 (encoders, muxers, but also audio and video converters) so that you can
 provide it raw or pre-encoded streams of data in input and have your
 encoded/muxed/converted stream in output.</p>
-<div class="refsect2">
-<a name="id-1.2.16.9.4"></a><h3>Features</h3>
+<div class="refsect3">
+<a name="id-1.2.16.9.4"></a><h4>Features</h4>
 <div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
-<li class="listitem">
-Automatic encoder and muxer selection based on elements available on the
-system.
-</li>
-<li class="listitem">
-Conversion of raw audio/video streams (scaling, framerate conversion,
+<li class="listitem"><p>Automatic encoder and muxer selection based on elements available on the
+system.</p></li>
+<li class="listitem"><p>Conversion of raw audio/video streams (scaling, framerate conversion,
 colorspace conversion, samplerate conversion) to conform to the profile
-output format.
-</li>
-<li class="listitem">
-Variable number of streams. If the presence property for a stream encoding
+output format.</p></li>
+<li class="listitem"><p>Variable number of streams. If the presence property for a stream encoding
 profile is 0, you can request any number of sink pads for it via the
 standard request pad gstreamer API or the <a class="link" href="gst-plugins-base-plugins-encodebin.html#GstEncodeBin-request-pad" title="The “request-pad” signal"><span class="type">“request-pad”</span></a> action
-signal.
-</li>
-<li class="listitem">
-Avoid reencoding (passthrough). If the input stream is already encoded and is
-compatible with what the <a href="../html/gst-plugins-base-libs-encoding-profile.html#GstEncodingProfile-struct"><span class="type">GstEncodingProfile</span></a> expects, then the stream won't
-be re-encoded but just passed through downstream to the muxer or the output.
-</li>
-<li class="listitem">
-Mix pre-encoded and raw streams as input. In addition to the passthrough
+signal.</p></li>
+<li class="listitem"><p>Avoid reencoding (passthrough). If the input stream is already encoded and is
+compatible with what the <a href="../html/GstEncodingProfile.html#GstEncodingProfile-struct"><span class="type">GstEncodingProfile</span></a> expects, then the stream won't
+be re-encoded but just passed through downstream to the muxer or the output.</p></li>
+<li class="listitem"><p>Mix pre-encoded and raw streams as input. In addition to the passthrough
 feature above, you can feed both raw audio/video *AND* already-encoded data
 to a pad. <a class="link" href="gst-plugins-base-plugins-encodebin.html#GstEncodeBin"><span class="type">GstEncodeBin</span></a> will take care of passing through the compatible
-segments and re-encoding the segments of media that need encoding.
-</li>
-<li class="listitem">
-Standard behaviour is to use a <a href="../html/gst-plugins-base-libs-encoding-profile.html#GstEncodingContainerProfile-struct"><span class="type">GstEncodingContainerProfile</span></a> to have both
+segments and re-encoding the segments of media that need encoding.</p></li>
+<li class="listitem"><p>Standard behaviour is to use a <a href="../html/GstEncodingProfile.html#GstEncodingContainerProfile-struct"><span class="type">GstEncodingContainerProfile</span></a> to have both
 encoding and muxing performed. But you can also provide a single stream
-profile (like <a href="../html/gst-plugins-base-libs-encoding-profile.html#GstEncodingAudioProfile-struct"><span class="type">GstEncodingAudioProfile</span></a>) to only have the encoding done and
-handle the encoded output yourself.
-</li>
-<li class="listitem">
-Audio imperfection corrections. Incoming audio streams can have non perfect
+profile (like <a href="../html/GstEncodingProfile.html#GstEncodingAudioProfile-struct"><span class="type">GstEncodingAudioProfile</span></a>) to only have the encoding done and
+handle the encoded output yourself.</p></li>
+<li class="listitem"><p>Audio imperfection corrections. Incoming audio streams can have non perfect
 timestamps (jitter), like the streams coming from ASF files. <a class="link" href="gst-plugins-base-plugins-encodebin.html#GstEncodeBin"><span class="type">GstEncodeBin</span></a>
 will automatically fix those imperfections for you. See
-<a class="link" href="gst-plugins-base-plugins-encodebin.html#GstEncodeBin--audio-jitter-tolerance" title="The “audio-jitter-tolerance” property"><span class="type">“audio-jitter-tolerance”</span></a> for more details.
-</li>
-<li class="listitem">
-Variable or Constant video framerate. If your <a href="../html/gst-plugins-base-libs-encoding-profile.html#GstEncodingVideoProfile-struct"><span class="type">GstEncodingVideoProfile</span></a> has
+<a class="link" href="gst-plugins-base-plugins-encodebin.html#GstEncodeBin--audio-jitter-tolerance" title="The “audio-jitter-tolerance” property"><span class="type">“audio-jitter-tolerance”</span></a> for more details.</p></li>
+<li class="listitem"><p>Variable or Constant video framerate. If your <a href="../html/GstEncodingProfile.html#GstEncodingVideoProfile-struct"><span class="type">GstEncodingVideoProfile</span></a> has
 the variableframerate property deactivated (default), then the incoming
 raw video stream will be retimestampped in order to produce a constant
-framerate.
-</li>
-<li class="listitem">
-Cross-boundary re-encoding. When feeding compatible pre-encoded streams that
+framerate.</p></li>
+<li class="listitem"><p>Cross-boundary re-encoding. When feeding compatible pre-encoded streams that
 fall on segment boundaries, and for supported formats (right now only H263),
 the GOP will be decoded/reencoded when needed to produce an encoded output
-that fits exactly within the request GstSegment.
-</li>
-<li class="listitem">
-Missing plugin support. If a <a href="/usr/share/gtk-doc/html/gstreamer-1.0GstElement.html#GstElement-struct"><span class="type">GstElement</span></a> is missing to encode/mux to the
+that fits exactly within the request GstSegment.</p></li>
+<li class="listitem"><p>Missing plugin support. If a <a href="/usr/share/gtk-doc/html/gstreamer-1.0GstElement.html#GstElement-struct"><span class="type">GstElement</span></a> is missing to encode/mux to the
 request profile formats, a missing-plugin <a href="/usr/share/gtk-doc/html/gstreamer-1.0GstMessage.html#GstMessage-struct"><span class="type">GstMessage</span></a> will be posted on the
 <a href="/usr/share/gtk-doc/html/gstreamer-1.0GstBus.html#GstBus-struct"><span class="type">GstBus</span></a>, allowing systems that support the missing-plugin system to offer the
-user a way to install the missing element.
-</li>
+user a way to install the missing element.</p></li>
 </ul></div>
 </div>
 <div class="refsynopsisdiv">
@@ -373,8 +353,8 @@ user a way to install the missing element.
 <hr>
 <div class="refsect2">
 <a name="GstEncodeBin--profile"></a><h3>The <code class="literal">“profile”</code> property</h3>
-<pre class="programlisting">  “profile”                  <a href="../html/gst-plugins-base-libs-encoding-profile.html#GstEncodingProfile-struct"><span class="type">GstEncodingProfile</span></a> *</pre>
-<p>The <a href="../html/gst-plugins-base-libs-encoding-profile.html#GstEncodingProfile-struct"><span class="type">GstEncodingProfile</span></a> to use. This property must be set before going
+<pre class="programlisting">  “profile”                  <a href="../html/GstEncodingProfile.html#GstEncodingProfile-struct"><span class="type">GstEncodingProfile</span></a> *</pre>
+<p>The <a href="../html/GstEncodingProfile.html#GstEncodingProfile-struct"><span class="type">GstEncodingProfile</span></a> to use. This property must be set before going
 to <a href="/usr/share/gtk-doc/html/gstreamer-1.0GstElement.html#GST-STATE-PAUSED:CAPS"><code class="literal">GST_STATE_PAUSED</code></a> or higher.</p>
 <p>Flags: Read / Write</p>
 </div>
@@ -476,7 +456,7 @@ user_function (<a class="link" href="gst-plugins-base-plugins-encodebin.html#Gst
 </tr>
 <tr>
 <td class="parameter_name"><p>profilename</p></td>
-<td class="parameter_description"><p>the name of a <a href="../html/gst-plugins-base-libs-encoding-profile.html#GstEncodingProfile-struct"><span class="type">GstEncodingProfile</span></a></p></td>
+<td class="parameter_description"><p>the name of a <a href="../html/GstEncodingProfile.html#GstEncodingProfile-struct"><span class="type">GstEncodingProfile</span></a></p></td>
 <td class="parameter_annotations"> </td>
 </tr>
 <tr>

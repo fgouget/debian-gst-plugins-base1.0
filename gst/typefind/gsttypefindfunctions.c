@@ -422,6 +422,76 @@ uri_type_find (GstTypeFind * tf, gpointer unused)
   }
 }
 
+/*** application/itc ***/
+static GstStaticCaps itc_caps = GST_STATIC_CAPS ("application/itc");
+#define ITC_CAPS (gst_static_caps_get(&itc_caps))
+
+static void
+itc_type_find (GstTypeFind * tf, gpointer unused)
+{
+  DataScanCtx c = { 0, NULL, 0 };
+  guint8 magic[8] = { 0x00, 0x00, 0x01, 0x1C, 0x69, 0x74, 0x63, 0x68 };
+  guint8 preamble[4] = { 0x00, 0x00, 0x00, 0x02 };
+  guint8 artwork_marker[8] = { 0x00, 0x00, 0x00, 0x00, 0x61, 0x72, 0x74, 0x77 };
+  guint8 item_marker[4] = { 0x69, 0x74, 0x65, 0x6D };
+  GstTypeFindProbability itc_prob = GST_TYPE_FIND_NONE;
+  int i;
+
+  if (G_UNLIKELY (!data_scan_ctx_ensure_data (tf, &c, 8)))
+    return;
+
+  if (memcmp (c.data, magic, 8))
+    return;
+
+  /* At least we found the right magic */
+  itc_prob = GST_TYPE_FIND_MINIMUM;
+  data_scan_ctx_advance (tf, &c, 8);
+
+  if (G_UNLIKELY (!data_scan_ctx_ensure_data (tf, &c, 12)))
+    goto done;
+
+  /* Check preamble 3 consecutive times */
+  for (i = 0; i < 3; i++) {
+    if (memcmp (c.data, preamble, 4))
+      goto done;
+    data_scan_ctx_advance (tf, &c, 4);
+  }
+
+  itc_prob = GST_TYPE_FIND_POSSIBLE;
+
+  if (G_UNLIKELY (!data_scan_ctx_ensure_data (tf, &c, 8)))
+    goto done;
+
+  if (memcmp (c.data, artwork_marker, 8))
+    goto done;
+
+  itc_prob = GST_TYPE_FIND_LIKELY;
+  data_scan_ctx_advance (tf, &c, 8);
+
+  if (G_UNLIKELY (!data_scan_ctx_ensure_data (tf, &c, 256)))
+    goto done;
+
+  /* ...and 256 0x00 padding bytes on what looks like the header's end */
+  for (i = 0; i < 256; i++) {
+    if (c.data[i])
+      goto done;
+  }
+
+  itc_prob = GST_TYPE_FIND_NEARLY_CERTAIN;
+  data_scan_ctx_advance (tf, &c, 256);
+
+  if (G_UNLIKELY (!data_scan_ctx_ensure_data (tf, &c, 8)))
+    goto done;
+
+  if (memcmp (c.data + 4, item_marker, 4))
+    goto done;
+
+  itc_prob = GST_TYPE_FIND_MAXIMUM;
+
+done:
+  gst_type_find_suggest (tf, itc_prob, ITC_CAPS);
+}
+
 /*** application/x-hls ***/
 
 static GstStaticCaps hls_caps = GST_STATIC_CAPS ("application/x-hls");
@@ -433,7 +503,8 @@ hls_type_find (GstTypeFind * tf, gpointer unused)
 {
   DataScanCtx c = { 0, NULL, 0 };
 
-  if (G_UNLIKELY (!data_scan_ctx_ensure_data (tf, &c, 7)))
+  /* Minimum useful size is #EXTM3U\n + 1 tag + ':' = 30 bytes */
+  if (G_UNLIKELY (!data_scan_ctx_ensure_data (tf, &c, 30)))
     return;
 
   if (memcmp (c.data, "#EXTM3U", 7))
@@ -441,8 +512,8 @@ hls_type_find (GstTypeFind * tf, gpointer unused)
 
   data_scan_ctx_advance (tf, &c, 7);
 
-  /* Check only the first 256 bytes */
-  while (c.offset < 256) {
+  /* Check only the first 4KB */
+  while (c.offset < 4096) {
     if (G_UNLIKELY (!data_scan_ctx_ensure_data (tf, &c, 21)))
       return;
 
@@ -2009,7 +2080,7 @@ static GstStaticCaps multipart_caps =
 GST_STATIC_CAPS ("multipart/x-mixed-replace");
 #define MULTIPART_CAPS gst_static_caps_get(&multipart_caps)
 
-/* multipart/x-mixed replace is: 
+/* multipart/x-mixed replace is:
  *   <maybe some whitespace>--<some ascii chars>[\r]\n
  *   <more ascii chars>[\r]\nContent-type:<more ascii>[\r]\n */
 static void
@@ -2066,7 +2137,7 @@ static GstStaticCaps mpeg_sys_caps = GST_STATIC_CAPS ("video/mpeg, "
 #define IS_MPEG_PES_HEADER(data)        (IS_MPEG_HEADER (data) &&            \
                                          IS_MPEG_PES_CODE (((guint8 *)(data))[3]))
 
-#define MPEG2_MAX_PROBE_LENGTH (128 * 1024)     /* 128kB should be 64 packs of the 
+#define MPEG2_MAX_PROBE_LENGTH (128 * 1024)     /* 128kB should be 64 packs of the
                                                  * most common 2kB pack size. */
 
 #define MPEG2_MIN_SYS_HEADERS 2
@@ -2286,7 +2357,7 @@ mpeg_sys_type_find (GstTypeFind * tf, gpointer unused)
   }
 
   /* If we at least saw MIN headers, and *some* were pes headers (pack headers
-   * are optional in an mpeg system stream) then return a lower-probability 
+   * are optional in an mpeg system stream) then return a lower-probability
    * result */
   if (pes_headers > 0 && (pack_headers + pes_headers) > MPEG2_MIN_SYS_HEADERS)
     goto suggest;
@@ -2314,7 +2385,7 @@ suggest:
     if (data0 != first_sync && prob >= 10)
       prob -= 10;
 
-    GST_LOG ("Suggesting MPEG %d system stream, %d packs, %d pes, prob %u%%\n",
+    GST_LOG ("Suggesting MPEG %d system stream, %d packs, %d pes, prob %u%%",
         mpegversion, pack_headers, pes_headers, prob);
 
     gst_type_find_suggest_simple (tf, prob, "video/mpeg",
@@ -2378,7 +2449,7 @@ mpeg_ts_probe_headers (GstTypeFind * tf, guint64 offset, gint packet_size)
 static void
 mpeg_ts_type_find (GstTypeFind * tf, gpointer unused)
 {
-  /* TS packet sizes to test: normal, DVHS packet size and 
+  /* TS packet sizes to test: normal, DVHS packet size and
    * FEC with 16 or 20 byte codes packet size. */
   const gint pack_sizes[] = { 188, 192, 204, 208 };
   const guint8 *data = NULL;
@@ -2407,7 +2478,7 @@ mpeg_ts_type_find (GstTypeFind * tf, gpointer unused)
         if (found >= GST_MPEGTS_TYPEFIND_MIN_HEADERS) {
           gint probability;
 
-          /* found at least 4 headers. 10 headers = MAXIMUM probability. 
+          /* found at least 4 headers. 10 headers = MAXIMUM probability.
            * Arbitrarily, I assigned 10% probability for each header we
            * found, 40% -> 100% */
           probability = MIN (10 * found, GST_TYPE_FIND_MAXIMUM);
@@ -2649,7 +2720,7 @@ h264_video_type_find (GstTypeFind * tf, gpointer unused)
 {
   DataScanCtx c = { 0, NULL, 0 };
 
-  /* Stream consists of: a series of sync codes (00 00 00 01) followed 
+  /* Stream consists of: a series of sync codes (00 00 00 01) followed
    * by NALs
    */
   gboolean seen_idr = FALSE;
@@ -5685,6 +5756,8 @@ plugin_init (GstPlugin * plugin)
       "txt", UTF32_CAPS, NULL, NULL);
   TYPE_FIND_REGISTER (plugin, "text/uri-list", GST_RANK_MARGINAL, uri_type_find,
       "ram", URI_CAPS, NULL, NULL);
+  TYPE_FIND_REGISTER (plugin, "application/itc", GST_RANK_SECONDARY,
+      itc_type_find, "itc", ITC_CAPS, NULL, NULL);
   TYPE_FIND_REGISTER (plugin, "application/x-hls", GST_RANK_MARGINAL,
       hls_type_find, "m3u8", HLS_CAPS, NULL, NULL);
   TYPE_FIND_REGISTER (plugin, "application/sdp", GST_RANK_SECONDARY,

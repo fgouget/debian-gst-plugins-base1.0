@@ -24,6 +24,7 @@
 
 /**
  * SECTION:gstvideoencoder
+ * @title: GstVideoEncoder
  * @short_description: Base class for video encoders
  * @see_also:
  *
@@ -31,59 +32,40 @@
  * encoded video data.
  *
  * GstVideoEncoder and subclass should cooperate as follows.
- * <orderedlist>
- * <listitem>
- *   <itemizedlist><title>Configuration</title>
- *   <listitem><para>
- *     Initially, GstVideoEncoder calls @start when the encoder element
+ *
+ * ## Configuration
+ *
+ *   * Initially, GstVideoEncoder calls @start when the encoder element
  *     is activated, which allows subclass to perform any global setup.
- *   </para></listitem>
- *   <listitem><para>
- *     GstVideoEncoder calls @set_format to inform subclass of the format
+ *   * GstVideoEncoder calls @set_format to inform subclass of the format
  *     of input video data that it is about to receive.  Subclass should
  *     setup for encoding and configure base class as appropriate
  *     (e.g. latency). While unlikely, it might be called more than once,
  *     if changing input parameters require reconfiguration.  Baseclass
  *     will ensure that processing of current configuration is finished.
- *   </para></listitem>
- *   <listitem><para>
- *     GstVideoEncoder calls @stop at end of all processing.
- *   </para></listitem>
- *   </itemizedlist>
- * </listitem>
- * <listitem>
- *   <itemizedlist>
- *   <title>Data processing</title>
- *     <listitem><para>
- *       Base class collects input data and metadata into a frame and hands
+ *   * GstVideoEncoder calls @stop at end of all processing.
+ *
+ * ## Data processing
+ *
+ *     * Base class collects input data and metadata into a frame and hands
  *       this to subclass' @handle_frame.
- *     </para></listitem>
- *     <listitem><para>
- *       If codec processing results in encoded data, subclass should call
+ *
+ *     * If codec processing results in encoded data, subclass should call
  *       @gst_video_encoder_finish_frame to have encoded data pushed
  *       downstream.
- *     </para></listitem>
- *     <listitem><para>
- *       If implemented, baseclass calls subclass @pre_push just prior to
+ *
+ *     * If implemented, baseclass calls subclass @pre_push just prior to
  *       pushing to allow subclasses to modify some metadata on the buffer.
  *       If it returns GST_FLOW_OK, the buffer is pushed downstream.
- *     </para></listitem>
- *     <listitem><para>
- *       GstVideoEncoderClass will handle both srcpad and sinkpad events.
+ *
+ *     * GstVideoEncoderClass will handle both srcpad and sinkpad events.
  *       Sink events will be passed to subclass if @event callback has been
  *       provided.
- *     </para></listitem>
- *   </itemizedlist>
- * </listitem>
- * <listitem>
- *   <itemizedlist><title>Shutdown phase</title>
- *   <listitem><para>
- *     GstVideoEncoder class calls @stop to inform the subclass that data
+ *
+ * ## Shutdown phase
+ *
+ *   * GstVideoEncoder class calls @stop to inform the subclass that data
  *     parsing will be stopped.
- *   </para></listitem>
- *   </itemizedlist>
- * </listitem>
- * </orderedlist>
  *
  * Subclass is responsible for providing pad template caps for
  * source and sink pads. The pads need to be named "sink" and "src". It should
@@ -91,16 +73,11 @@
  * @gst_video_encoder_finish_frame.
  *
  * Things that subclass need to take care of:
- * <itemizedlist>
- *   <listitem><para>Provide pad templates</para></listitem>
- *   <listitem><para>
- *      Provide source pad caps before pushing the first buffer
- *   </para></listitem>
- *   <listitem><para>
- *      Accept data in @handle_frame and provide encoded results to
+ *
+ *   * Provide pad templates
+ *   * Provide source pad caps before pushing the first buffer
+ *   * Accept data in @handle_frame and provide encoded results to
  *      @gst_video_encoder_finish_frame.
- *   </para></listitem>
- * </itemizedlist>
  *
  */
 
@@ -517,7 +494,11 @@ _new_output_state (GstCaps * caps, GstVideoCodecState * reference)
   state = g_slice_new0 (GstVideoCodecState);
   state->ref_count = 1;
   gst_video_info_init (&state->info);
-  gst_video_info_set_format (&state->info, GST_VIDEO_FORMAT_ENCODED, 0, 0);
+
+  if (!gst_video_info_set_format (&state->info, GST_VIDEO_FORMAT_ENCODED, 0, 0)) {
+    g_slice_free (GstVideoCodecState, state);
+    return NULL;
+  }
 
   state->caps = caps;
 
@@ -538,6 +519,8 @@ _new_output_state (GstCaps * caps, GstVideoCodecState * reference)
     tgt->par_d = ref->par_d;
     tgt->fps_n = ref->fps_n;
     tgt->fps_d = ref->fps_d;
+
+    GST_VIDEO_INFO_FIELD_ORDER (tgt) = GST_VIDEO_INFO_FIELD_ORDER (ref);
 
     GST_VIDEO_INFO_MULTIVIEW_MODE (tgt) = GST_VIDEO_INFO_MULTIVIEW_MODE (ref);
     GST_VIDEO_INFO_MULTIVIEW_FLAGS (tgt) = GST_VIDEO_INFO_MULTIVIEW_FLAGS (ref);
@@ -1569,6 +1552,7 @@ gst_video_encoder_negotiate_default (GstVideoEncoder * encoder)
   GstQuery *query = NULL;
   GstVideoCodecFrame *frame;
   GstCaps *prevcaps;
+  gchar *colorimetry;
 
   g_return_val_if_fail (state->caps != NULL, FALSE);
 
@@ -1592,6 +1576,24 @@ gst_video_encoder_negotiate_default (GstVideoEncoder * encoder)
     if (state->codec_data)
       gst_caps_set_simple (state->caps, "codec_data", GST_TYPE_BUFFER,
           state->codec_data, NULL);
+
+    gst_caps_set_simple (state->caps, "interlace-mode", G_TYPE_STRING,
+        gst_video_interlace_mode_to_string (info->interlace_mode), NULL);
+    if (info->interlace_mode == GST_VIDEO_INTERLACE_MODE_INTERLEAVED &&
+        GST_VIDEO_INFO_FIELD_ORDER (info) != GST_VIDEO_FIELD_ORDER_UNKNOWN)
+      gst_caps_set_simple (state->caps, "field-order", G_TYPE_STRING,
+          gst_video_field_order_to_string (GST_VIDEO_INFO_FIELD_ORDER (info)),
+          NULL);
+
+    colorimetry = gst_video_colorimetry_to_string (&info->colorimetry);
+    if (colorimetry)
+      gst_caps_set_simple (state->caps, "colorimetry", G_TYPE_STRING,
+          colorimetry, NULL);
+    g_free (colorimetry);
+
+    if (info->chroma_site != GST_VIDEO_CHROMA_SITE_UNKNOWN)
+      gst_caps_set_simple (state->caps, "chroma-site", G_TYPE_STRING,
+          gst_video_chroma_to_string (info->chroma_site), NULL);
 
     if (GST_VIDEO_INFO_MULTIVIEW_MODE (info) != GST_VIDEO_MULTIVIEW_MODE_NONE) {
       const gchar *caps_mview_mode =
@@ -1903,7 +1905,7 @@ foreach_metadata (GstBuffer * inbuf, GstMeta ** meta, gpointer user_data)
 /**
  * gst_video_encoder_finish_frame:
  * @encoder: a #GstVideoEncoder
- * @frame: (transfer full): an encoded #GstVideoCodecFrame 
+ * @frame: (transfer full): an encoded #GstVideoCodecFrame
  *
  * @frame must have a valid encoded data buffer, whose metadata fields
  * are then appropriately set according to frame data or no buffer at
@@ -2254,6 +2256,8 @@ gst_video_encoder_set_output_state (GstVideoEncoder * encoder, GstCaps * caps,
   g_return_val_if_fail (caps != NULL, NULL);
 
   state = _new_output_state (caps, reference);
+  if (!state)
+    return NULL;
 
   GST_VIDEO_ENCODER_STREAM_LOCK (encoder);
   if (priv->output_state)
@@ -2340,7 +2344,7 @@ gst_video_encoder_get_oldest_frame (GstVideoEncoder * encoder)
  * @frame_number: system_frame_number of a frame
  *
  * Get a pending unfinished #GstVideoCodecFrame
- * 
+ *
  * Returns: (transfer full): pending unfinished #GstVideoCodecFrame identified by @frame_number.
  */
 GstVideoCodecFrame *
@@ -2370,7 +2374,7 @@ gst_video_encoder_get_frame (GstVideoEncoder * encoder, int frame_number)
  * @encoder: a #GstVideoEncoder
  *
  * Get all pending unfinished #GstVideoCodecFrame
- * 
+ *
  * Returns: (transfer full) (element-type GstVideoCodecFrame): pending unfinished #GstVideoCodecFrame.
  */
 GList *

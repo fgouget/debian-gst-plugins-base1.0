@@ -1,24 +1,25 @@
 # Hungarian translation of gst-plugins-base
+# Copyright (C) 2004, 2006, 2007, 2008, 2009, 2010, 2012, 2014, 2015, 2016, 2017 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gst-plugins-base package.
-# Copyright (C) 2004, 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 #
 # Laszlo Dvornik <dvornik@invitel.hu>, 2004.
 # Gabor Kelemen <kelemeng@gnome.hu>, 2006, 2007, 2008, 2009, 2012, 2016.
-# Balázs Úr <urbalazs@gmail.com>, 2014, 2015.
+# Balázs Úr <urbalazs@gmail.com>, 2014, 2015, 2017.
 msgid ""
 msgstr ""
-"Project-Id-Version: gst-plugins-base 1.7.90\n"
+"Project-Id-Version: gst-plugins-base 1.10.0\n"
 "Report-Msgid-Bugs-To: http://bugzilla.gnome.org/\n"
-"POT-Creation-Date: 2017-02-23 15:14+0200\n"
-"PO-Revision-Date: 2016-03-14 19:14+0100\n"
-"Last-Translator: Gabor Kelemen <kelemeng@gnome.hu>\n"
+"POT-Creation-Date: 2017-04-27 15:49+0300\n"
+"PO-Revision-Date: 2017-03-19 00:47+0100\n"
+"Last-Translator: Balázs Úr <urbalazs@gmail.com>\n"
 "Language-Team: Hungarian <translation-team-hu@lists.sourceforge.net>\n"
 "Language: hu\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"X-Bugs: Report translation errors to the Language-Team address.\n"
 "X-Rosetta-Export-Date: 2007-03-10 00:18+0000\n"
-"X-Generator: Lokalize 1.5\n"
+"X-Generator: Lokalize 1.2\n"
 "Plural-Forms:  nplurals=2; plural=(n != 1);\n"
 
 msgid "Could not open device for playback in mono mode."
@@ -89,13 +90,11 @@ msgstr "Ez egy szövegfájlnak tűnik"
 msgid "Could not create \"uridecodebin\" element."
 msgstr "Nem hozható létre „uridecodebin” elem."
 
-#, fuzzy
 msgid "Could not create \"decodebin3\" element."
-msgstr "Nem hozható létre „uridecodebin” elem."
+msgstr "Nem hozható létre „decodebin3” elem."
 
-#, fuzzy
 msgid "Could not create \"urisourcebin\" element."
-msgstr "Nem hozható létre „uridecodebin” elem."
+msgstr "Nem hozható létre „urisourcebin” elem."
 
 #, c-format
 msgid "Both autovideosink and %s elements are missing."
@@ -230,9 +229,8 @@ msgstr "TMPlayer feliratformátum"
 msgid "Kate subtitle format"
 msgstr "Kate feliratformátum"
 
-#, fuzzy
 msgid "WebVTT subtitle format"
-msgstr "Kate feliratformátum"
+msgstr "WebVTT feliratformátum"
 
 msgid "Uncompressed video"
 msgstr "Tömörítetlen videó"
@@ -400,14 +398,13 @@ msgstr "felvétel fókusztávolsága"
 msgid "Focal length of the lens used capturing the image, in mm"
 msgstr "A kép felvételéhez használt lencse fókusztávolsága mm-ben"
 
-#, fuzzy
 msgid "capturing 35 mm equivalent focal length"
-msgstr "felvétel fókusztávolsága"
+msgstr "felvétel 35 mm egyenértékes fókusztávolsága"
 
-#, fuzzy
 msgid ""
 "35 mm equivalent focal length of the lens used capturing the image, in mm"
-msgstr "A kép felvételéhez használt lencse fókusztávolsága mm-ben"
+msgstr ""
+"A kép felvételéhez használt lencse 35 mm egyenértékes fókusztávolsága mm-ben"
 
 msgid "capturing digital zoom ratio"
 msgstr "felvétel digitális nagyítási aránya"
@@ -674,146 +671,3 @@ msgstr "Meg kell adnia legalább egy fájlnevet vagy URI-t a lejátszáshoz."
 msgid "Press 'k' to see a list of keyboard shortcuts.\n"
 msgstr ""
 "Nyomja meg a „k” billentyűt a gyorsbillentyűk listájának megtekintéséhez.\n"
-
-#~ msgid "Internal data stream error."
-#~ msgstr "Belső adatfolyam-hiba."
-
-#~ msgid "A %s plugin is required to play this stream, but not installed."
-#~ msgstr ""
-#~ "Az adatfolyam lejátszásához egy %s bővítmény szükséges, de az nincs "
-#~ "telepítve."
-
-#~ msgid "Uncompressed %s YUV %s"
-#~ msgstr "Tömörítetlen %s YUV %s"
-
-#~ msgid "Master"
-#~ msgstr "Fő hangerő"
-
-#~ msgid "Bass"
-#~ msgstr "Basszus"
-
-#~ msgid "Treble"
-#~ msgstr "Magas"
-
-#~ msgid "PCM"
-#~ msgstr "PCM"
-
-#~ msgid "Synth"
-#~ msgstr "Szintet."
-
-#~ msgid "Line-in"
-#~ msgstr "Vonalbemenet"
-
-#~ msgid "CD"
-#~ msgstr "CD"
-
-#~ msgid "Microphone"
-#~ msgstr "Mikrofon"
-
-#~ msgid "PC Speaker"
-#~ msgstr "PC hangszóró"
-
-#~ msgid "Playback"
-#~ msgstr "Lejátszás"
-
-#~ msgid "Capture"
-#~ msgstr "Felvétel"
-
-#~ msgid "Could not open vfs file \"%s\" for writing: %s."
-#~ msgstr "Nem lehet írásra megnyitni a(z) „%s” vfs-fájlt: %s."
-
-#~ msgid "No filename given"
-#~ msgstr "Nincs fájlnév megadva"
-
-#~ msgid "Could not close vfs file \"%s\"."
-#~ msgstr "Nem lehet bezárni a(z) „%s” vfs-fájlt."
-
-#~ msgid "Error while writing to file \"%s\"."
-#~ msgstr "Hiba a(z) „%s” fájl írása közben."
-
-#~ msgid "Invalid subtitle URI \"%s\", subtitles disabled."
-#~ msgstr "Érvénytelen felirat URI: „%s”, a feliratok letiltva."
-
-#~ msgid "RTSP streams cannot be played yet."
-#~ msgstr "Az RTSP adatfolyamok még nem játszhatók le."
-
-#~ msgid ""
-#~ "Only a subtitle stream was detected. Either you are loading a subtitle "
-#~ "file or some other type of text file, or the media file was not "
-#~ "recognized."
-#~ msgstr ""
-#~ "Csak egy feliratfolyam észlelhető. Vagy egy feliratfájlt vagy más "
-#~ "szövegfájlt tölt be, vagy a médiafájl nem ismerhető fel."
-
-#~ msgid ""
-#~ "You do not have a decoder installed to handle this file. You might need "
-#~ "to install the necessary plugins."
-#~ msgstr ""
-#~ "Nincs telepítve a fájl kezeléséhez szükséges dekódoló. Lehetséges, hogy "
-#~ "telepítenie kell a szükséges bővítményeket."
-
-#~ msgid "This is not a media file"
-#~ msgstr "Ez nem egy médiafájl"
-
-#~ msgid "A subtitle stream was detected, but no video stream."
-#~ msgstr "Egy feliratfolyam felismerve, de nincs videofolyam."
-
-#~ msgid "Both autovideosink and xvimagesink elements are missing."
-#~ msgstr "Mind az autovideosink, mind az xvimagesink elemek hiányoznak."
-
-#~ msgid "Both autoaudiosink and alsasink elements are missing."
-#~ msgstr "Az autoaudiosink és az alsasink elem is hiányzik."
-
-#~ msgid "Error while sending gdp header data to \"%s:%d\"."
-#~ msgstr "Hiba a gdp fejlécadatok küldésekor a következőnek: „%s:%d”."
-
-#~ msgid "Error while sending gdp payload data to \"%s:%d\"."
-#~ msgstr "Hiba a gdp küldeményadatok elküldésekor a következőnek: „%s:%d”."
-
-#~ msgid "Connection to %s:%d refused."
-#~ msgstr "A kapcsolat visszautasítva a következőhöz: %s:%d."
-
-#~ msgid "Uncompressed planar YVU 4:2:0"
-#~ msgstr "Tömörítetlen síkbeli YVU 4:2:0"
-
-#~ msgid "Uncompressed packed YUV 4:1:0"
-#~ msgstr "Tömörítetlen pakolt YUV 4:1:0"
-
-#~ msgid "Uncompressed packed YVU 4:1:0"
-#~ msgstr "Tömörítetlen pakolt YVU 4:1:0"
-
-#~ msgid "Uncompressed packed YUV 4:1:1"
-#~ msgstr "Tömörítetlen pakolt YUV 4:1:1"
-
-#~ msgid "Uncompressed packed YUV 4:4:4"
-#~ msgstr "Tömörítetlen pakolt YUV 4:4:4"
-
-#~ msgid "Uncompressed planar YUV 4:2:2"
-#~ msgstr "Tömörítetlen síkbeli YUV 4:2:2"
-
-#~ msgid "Uncompressed planar YUV 4:1:1"
-#~ msgstr "Tömörítetlen síkbeli YUV 4:1:1"
-
-#~ msgid "Uncompressed black and white Y-plane"
-#~ msgstr "Tömörítetlen fekete-fehér Y-sík"
-
-#~ msgid "Raw PCM audio"
-#~ msgstr "Nyers PCM hang"
-
-#~ msgid "Raw %d-bit floating-point audio"
-#~ msgstr "Nyers %d bites lebegőpontos hang"
-
-#~ msgid "Raw floating-point audio"
-#~ msgstr "Nyers lebegőpontos hang"
-
-#~ msgid "No device specified."
-#~ msgstr "Nincs megadva eszköz."
-
-#~ msgid "Device \"%s\" does not exist."
-#~ msgstr "Az eszköz („%s”) nem létezik."
-
-#~ msgid "Device \"%s\" is already being used."
-#~ msgstr "Az eszköz („%s”) már használatban van."
-
-#~ msgid "Could not open device \"%s\" for reading and writing."
-#~ msgstr "Nem lehet olvasásra és írásra megnyitni az eszközt („%s”)."
