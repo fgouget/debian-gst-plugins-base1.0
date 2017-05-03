@@ -23,25 +23,27 @@
 
 /**
  * SECTION:element-audioconvert
+ * @title: audioconvert
  *
  * Audioconvert converts raw audio buffers between various possible formats.
  * It supports integer to float conversion, width/depth conversion,
  * signedness and endianness conversion and channel transformations
  * (ie. upmixing and downmixing), as well as dithering and noise-shaping.
  *
- * <refsect2>
- * <title>Example launch line</title>
+ * ## Example launch line
  * |[
  * gst-launch-1.0 -v -m audiotestsrc ! audioconvert ! audio/x-raw,format=S8,channels=2 ! level ! fakesink silent=TRUE
- * ]| This pipeline converts audio to 8-bit.  The level element shows that
+ * ]|
+ *  This pipeline converts audio to 8-bit.  The level element shows that
  * the output levels still match the one for a sine wave.
  * |[
  * gst-launch-1.0 -v -m uridecodebin uri=file:///path/to/audio.flac ! audioconvert ! vorbisenc ! oggmux ! filesink location=audio.ogg
- * ]| The vorbis encoder takes float audio data instead of the integer data
+ * ]|
+ *  The vorbis encoder takes float audio data instead of the integer data
  * output by most other audio elements. This pipeline decodes a FLAC audio file
  * (or any other audio file for which decoders are installed) and re-encodes
  * it into an Ogg/Vorbis audio file.
- * </refsect2>
+ *
  */
 
 /*
@@ -85,6 +87,8 @@ static gboolean gst_audio_convert_set_caps (GstBaseTransform * base,
     GstCaps * incaps, GstCaps * outcaps);
 static GstFlowReturn gst_audio_convert_transform (GstBaseTransform * base,
     GstBuffer * inbuf, GstBuffer * outbuf);
+static GstFlowReturn gst_audio_convert_transform_ip (GstBaseTransform * base,
+    GstBuffer * buf);
 static gboolean gst_audio_convert_transform_meta (GstBaseTransform * trans,
     GstBuffer * outbuf, GstMeta * meta, GstBuffer * inbuf);
 static GstFlowReturn gst_audio_convert_submit_input_buffer (GstBaseTransform *
@@ -176,12 +180,15 @@ gst_audio_convert_class_init (GstAudioConvertClass * klass)
       GST_DEBUG_FUNCPTR (gst_audio_convert_set_caps);
   basetransform_class->transform =
       GST_DEBUG_FUNCPTR (gst_audio_convert_transform);
+  basetransform_class->transform_ip =
+      GST_DEBUG_FUNCPTR (gst_audio_convert_transform_ip);
   basetransform_class->transform_meta =
       GST_DEBUG_FUNCPTR (gst_audio_convert_transform_meta);
   basetransform_class->submit_input_buffer =
       GST_DEBUG_FUNCPTR (gst_audio_convert_submit_input_buffer);
 
   basetransform_class->passthrough_on_same_caps = TRUE;
+  basetransform_class->transform_ip_on_passthrough = FALSE;
 }
 
 static void
@@ -302,41 +309,41 @@ gst_audio_convert_transform_caps (GstBaseTransform * btrans,
   return result;
 }
 
+/* Count the number of bits set
+ * Optimized for the common case, assuming that the number of channels
+ * (i.e. bits set) is small
+ */
 static gint
 n_bits_set (guint64 x)
 {
-  gint i;
-  gint c = 0;
-  guint64 y = 1;
+  gint c;
 
-  for (i = 0; i < 64; i++) {
-    if (x & y)
-      c++;
-    y <<= 1;
-  }
+  for (c = 0; x; c++)
+    x &= x - 1;
 
   return c;
 }
 
+/* Reduce the mask to the n_chans lowest set bits
+ *
+ * The algorithm clears the n_chans lowest set bits and subtracts the
+ * result from the original mask to get the desired mask.
+ * It is optimized for the common case where n_chans is a small
+ * number. In the worst case, however, it stops after 64 iterations.
+ */
 static guint64
 find_suitable_mask (guint64 mask, gint n_chans)
 {
-  guint64 intersection;
-  gint i;
+  guint64 x = mask;
 
-  i = 0;
+  for (; x && n_chans; n_chans--)
+    x &= x - 1;
 
-  g_assert (n_bits_set (mask) >= n_chans);
+  g_assert (x || n_chans == 0);
+  /* assertion fails if mask contained less bits than n_chans
+   * or n_chans was < 0 */
 
-  intersection = mask;
-  do {
-    intersection = intersection & ((~G_GUINT64_CONSTANT (0)) >> i);
-    i++;
-  } while (n_bits_set (intersection) > n_chans && i < 64);
-
-  if (i < 64)
-    return intersection;
-  return 0;
+  return mask - x;
 }
 
 static void
@@ -646,6 +653,7 @@ gst_audio_convert_set_caps (GstBaseTransform * base, GstCaps * incaps,
   GstAudioConvert *this = GST_AUDIO_CONVERT (base);
   GstAudioInfo in_info;
   GstAudioInfo out_info;
+  gboolean in_place;
 
   GST_DEBUG_OBJECT (base, "incaps %" GST_PTR_FORMAT ", outcaps %"
       GST_PTR_FORMAT, incaps, outcaps);
@@ -670,6 +678,9 @@ gst_audio_convert_set_caps (GstBaseTransform * base, GstCaps * incaps,
   if (this->convert == NULL)
     goto no_converter;
 
+  in_place = gst_audio_converter_supports_inplace (this->convert);
+  gst_base_transform_set_in_place (base, in_place);
+
   this->in_info = in_info;
   this->out_info = out_info;
 
@@ -693,13 +704,14 @@ no_converter:
   }
 }
 
+/* if called through gst_audio_convert_transform_ip() inbuf == outbuf */
 static GstFlowReturn
 gst_audio_convert_transform (GstBaseTransform * base, GstBuffer * inbuf,
     GstBuffer * outbuf)
 {
   GstFlowReturn ret;
   GstAudioConvert *this = GST_AUDIO_CONVERT (base);
-  GstMapInfo srcmap, dstmap;
+  GstMapInfo srcmap = { NULL, }, dstmap;
   gint insize, outsize;
   gboolean inbuf_writable;
   GstAudioConverterFlags flags;
@@ -716,18 +728,26 @@ gst_audio_convert_transform (GstBaseTransform * base, GstBuffer * inbuf,
   if (insize == 0 || outsize == 0)
     return GST_FLOW_OK;
 
-  inbuf_writable = gst_buffer_is_writable (inbuf)
-      && gst_buffer_n_memory (inbuf) == 1
-      && gst_memory_is_writable (gst_buffer_peek_memory (inbuf, 0));
-
   /* get src and dst data */
-  gst_buffer_map (inbuf, &srcmap,
-      inbuf_writable ? GST_MAP_READWRITE : GST_MAP_READ);
-  gst_buffer_map (outbuf, &dstmap, GST_MAP_WRITE);
+  if (inbuf != outbuf) {
+    inbuf_writable = gst_buffer_is_writable (inbuf)
+        && gst_buffer_n_memory (inbuf) == 1
+        && gst_memory_is_writable (gst_buffer_peek_memory (inbuf, 0));
+
+    if (!gst_buffer_map (inbuf, &srcmap,
+            inbuf_writable ? GST_MAP_READWRITE : GST_MAP_READ))
+      goto inmap_error;
+  } else {
+    inbuf_writable = TRUE;
+  }
+  if (!gst_buffer_map (outbuf, &dstmap, GST_MAP_WRITE))
+    goto outmap_error;
 
   /* check in and outsize */
-  if (srcmap.size < insize)
-    goto wrong_size;
+  if (inbuf != outbuf) {
+    if (srcmap.size < insize)
+      goto wrong_size;
+  }
   if (dstmap.size < outsize)
     goto wrong_size;
 
@@ -741,7 +761,7 @@ gst_audio_convert_transform (GstBaseTransform * base, GstBuffer * inbuf,
     gpointer out[1] = { dstmap.data };
 
     if (!gst_audio_converter_samples (this->convert, flags,
-            in, samples, out, samples))
+            inbuf != outbuf ? in : out, samples, out, samples))
       goto convert_error;
   } else {
     /* Create silence buffer */
@@ -751,7 +771,8 @@ gst_audio_convert_transform (GstBaseTransform * base, GstBuffer * inbuf,
 
 done:
   gst_buffer_unmap (outbuf, &dstmap);
-  gst_buffer_unmap (inbuf, &srcmap);
+  if (inbuf != outbuf)
+    gst_buffer_unmap (inbuf, &srcmap);
 
   return ret;
 
@@ -773,6 +794,26 @@ convert_error:
     ret = GST_FLOW_ERROR;
     goto done;
   }
+inmap_error:
+  {
+    GST_ELEMENT_ERROR (this, STREAM, FORMAT,
+        (NULL), ("failed to map input buffer"));
+    return GST_FLOW_ERROR;
+  }
+outmap_error:
+  {
+    GST_ELEMENT_ERROR (this, STREAM, FORMAT,
+        (NULL), ("failed to map output buffer"));
+    if (inbuf != outbuf)
+      gst_buffer_unmap (inbuf, &srcmap);
+    return GST_FLOW_ERROR;
+  }
+}
+
+static GstFlowReturn
+gst_audio_convert_transform_ip (GstBaseTransform * base, GstBuffer * buf)
+{
+  return gst_audio_convert_transform (base, buf, buf);
 }
 
 static gboolean

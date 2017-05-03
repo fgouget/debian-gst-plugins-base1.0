@@ -19,6 +19,7 @@
 
 /**
  * SECTION:element-vorbisdec
+ * @title: vorbisdec
  * @see_also: vorbisenc, oggdemux
  *
  * This element decodes a Vorbis stream to raw float audio.
@@ -27,13 +28,12 @@
  * Foundation</ulink>. As it outputs raw float audio you will often need to
  * put an audioconvert element after it.
  *
- *
- * <refsect2>
- * <title>Example pipelines</title>
+ * ## Example pipelines
  * |[
  * gst-launch-1.0 -v filesrc location=sine.ogg ! oggdemux ! vorbisdec ! audioconvert ! audioresample ! autoaudiosink
- * ]| Decode an Ogg/Vorbis. To create an Ogg/Vorbis file refer to the documentation of vorbisenc.
- * </refsect2>
+ * ]|
+ *  Decode an Ogg/Vorbis. To create an Ogg/Vorbis file refer to the documentation of vorbisenc.
+ *
  */
 
 #ifdef HAVE_CONFIG_H
@@ -79,6 +79,7 @@ static GstFlowReturn vorbis_dec_handle_frame (GstAudioDecoder * dec,
     GstBuffer * buffer);
 static void vorbis_dec_flush (GstAudioDecoder * dec, gboolean hard);
 static gboolean vorbis_dec_set_format (GstAudioDecoder * dec, GstCaps * caps);
+static void vorbis_dec_reset (GstAudioDecoder * dec);
 
 static void
 gst_vorbis_dec_class_init (GstVorbisDecClass * klass)
@@ -581,9 +582,13 @@ vorbis_dec_handle_frame (GstAudioDecoder * dec, GstBuffer * buffer)
 
   /* switch depending on packet type */
   if ((gst_ogg_packet_data (packet))[0] & 1) {
-    if (vd->initialized) {
-      GST_WARNING_OBJECT (vd, "Already initialized, so ignoring header packet");
-      goto done;
+    /* If we get a new initialization packet, reset the decoder.
+     * The vorbis_info struct should have a rate of 0 if it hasn't been
+     * initialized yet. */
+    if ((vd->initialized || (vd->vi.rate != 0)) &&
+        (gst_ogg_packet_data (packet))[0] == 0x01) {
+      GST_INFO_OBJECT (vd, "already initialized, re-init");
+      vorbis_dec_reset (dec);
     }
     result = vorbis_handle_header_packet (vd, packet);
     if (result != GST_FLOW_OK)
@@ -633,6 +638,23 @@ vorbis_dec_flush (GstAudioDecoder * dec, gboolean hard)
 #endif
 }
 
+static void
+vorbis_dec_reset (GstAudioDecoder * dec)
+{
+  GstVorbisDec *vd = GST_VORBIS_DEC (dec);
+
+  vd->initialized = FALSE;
+#ifndef USE_TREMOLO
+  vorbis_block_clear (&vd->vb);
+#endif
+  vorbis_dsp_clear (&vd->vd);
+
+  vorbis_comment_clear (&vd->vc);
+  vorbis_info_clear (&vd->vi);
+  vorbis_info_init (&vd->vi);
+  vorbis_comment_init (&vd->vc);
+}
+
 static gboolean
 vorbis_dec_set_format (GstAudioDecoder * dec, GstCaps * caps)
 {
@@ -644,18 +666,9 @@ vorbis_dec_set_format (GstAudioDecoder * dec, GstCaps * caps)
   if (!vd->initialized)
     return TRUE;
 
-  vd->initialized = FALSE;
-#ifndef USE_TREMOLO
-  vorbis_block_clear (&vd->vb);
-#endif
-  vorbis_dsp_clear (&vd->vd);
-
-  /* We need to free and re-init these,
-   * or libvorbis chokes */
-  vorbis_comment_clear (&vd->vc);
-  vorbis_info_clear (&vd->vi);
-  vorbis_info_init (&vd->vi);
-  vorbis_comment_init (&vd->vc);
+  /* We need to free and re-init libvorbis,
+   * or it chokes */
+  vorbis_dec_reset (dec);
 
   return TRUE;
 }

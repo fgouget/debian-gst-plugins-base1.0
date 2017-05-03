@@ -26,6 +26,7 @@ GST_DEBUG_CATEGORY_STATIC (gst_video_pool_debug);
 
 /**
  * SECTION:gstvideopool
+ * @title: GstVideoBufferPool
  * @short_description: GstBufferPool for raw video buffers
  * @see_also: #GstBufferPool
  *
@@ -186,7 +187,9 @@ video_buffer_pool_set_config (GstBufferPool * pool, GstStructure * config)
       priv->video_align.stride_align[n] = max_align;
 
     /* apply the alignment to the info */
-    gst_video_info_align (&info, &priv->video_align);
+    if (!gst_video_info_align (&info, &priv->video_align))
+      goto failed_to_align;
+
     gst_buffer_pool_config_set_video_alignment (config, &priv->video_align);
 
     if (priv->params.align < max_align) {
@@ -227,7 +230,11 @@ wrong_size:
     GST_WARNING_OBJECT (pool,
         "Provided size is to small for the caps: %u", size);
     return FALSE;
-
+  }
+failed_to_align:
+  {
+    GST_WARNING_OBJECT (pool, "Failed to align");
+    return FALSE;
   }
 }
 

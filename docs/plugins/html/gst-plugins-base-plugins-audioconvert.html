@@ -84,8 +84,8 @@
 It supports integer to float conversion, width/depth conversion,
 signedness and endianness conversion and channel transformations
 (ie. upmixing and downmixing), as well as dithering and noise-shaping.</p>
-<div class="refsect2">
-<a name="id-1.2.8.7.3"></a><h3>Example launch line</h3>
+<div class="refsect3">
+<a name="id-1.2.8.7.3"></a><h4>Example launch line</h4>
 <div class="informalexample">
   <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
     <tbody>
@@ -96,8 +96,10 @@ signedness and endianness conversion and channel transformations
     </tbody>
   </table>
 </div>
+
+<p>
  This pipeline converts audio to 8-bit.  The level element shows that
-the output levels still match the one for a sine wave.
+the output levels still match the one for a sine wave.</p>
 <div class="informalexample">
   <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
     <tbody>
@@ -108,10 +110,12 @@ the output levels still match the one for a sine wave.
     </tbody>
   </table>
 </div>
+
+<p>
  The vorbis encoder takes float audio data instead of the integer data
 output by most other audio elements. This pipeline decodes a FLAC audio file
 (or any other audio file for which decoders are installed) and re-encodes
-it into an Ogg/Vorbis audio file.
+it into an Ogg/Vorbis audio file.</p>
 </div>
 <div class="refsynopsisdiv">
 <h2>Synopsis</h2>

@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>GstVideoChroma: GStreamer Base Plugins 1.0 Library Reference Manual</title>
+<title>GstVideoChromaResample: GStreamer Base Plugins 1.0 Library Reference Manual</title>
 <meta name="generator" content="DocBook XSL Stylesheets V1.79.1">
 <link rel="home" href="index.html" title="GStreamer Base Plugins 1.0 Library Reference Manual">
 <link rel="up" href="gstreamer-video.html" title="Video Library">
@@ -26,8 +26,8 @@
 <a name="gst-plugins-base-libs-GstVideoChroma"></a><div class="titlepage"></div>
 <div class="refnamediv"><table width="100%"><tr>
 <td valign="top">
-<h2><span class="refentrytitle"><a name="gst-plugins-base-libs-GstVideoChroma.top_of_page"></a>GstVideoChroma</span></h2>
-<p>GstVideoChroma — Functions and utility object for operating on chroma video planes</p>
+<h2><span class="refentrytitle"><a name="gst-plugins-base-libs-GstVideoChroma.top_of_page"></a>GstVideoChromaResample</span></h2>
+<p>GstVideoChromaResample — Functions and utility object for operating on chroma video planes</p>
 </td>
 <td class="gallery_image" valign="top" align="right"></td>
 </tr></table></div>
@@ -293,7 +293,7 @@ at <em class="parameter"><code>offset</code></em>
 gst_video_chroma_resample_new (<em class="parameter"><code><a class="link" href="gst-plugins-base-libs-GstVideoChroma.html#GstVideoChromaMethod" title="enum GstVideoChromaMethod"><span class="type">GstVideoChromaMethod</span></a> method</code></em>,
                                <em class="parameter"><code><a class="link" href="gst-plugins-base-libs-GstVideoChroma.html#GstVideoChromaSite" title="enum GstVideoChromaSite"><span class="type">GstVideoChromaSite</span></a> site</code></em>,
                                <em class="parameter"><code><a class="link" href="gst-plugins-base-libs-GstVideoChroma.html#GstVideoChromaFlags" title="enum GstVideoChromaFlags"><span class="type">GstVideoChromaFlags</span></a> flags</code></em>,
-                               <em class="parameter"><code><a class="link" href="gst-plugins-base-libs-gstvideo.html#GstVideoFormat" title="enum GstVideoFormat"><span class="type">GstVideoFormat</span></a> format</code></em>,
+                               <em class="parameter"><code><a class="link" href="gst-plugins-base-libs-GstVideoAlignment.html#GstVideoFormat" title="enum GstVideoFormat"><span class="type">GstVideoFormat</span></a> format</code></em>,
                                <em class="parameter"><code><a href="/usr/share/gtk-doc/html/glibglib-Basic-Types.html#gint"><span class="type">gint</span></a> h_factor</code></em>,
                                <em class="parameter"><code><a href="/usr/share/gtk-doc/html/glibglib-Basic-Types.html#gint"><span class="type">gint</span></a> v_factor</code></em>);</pre>
 <p>Create a new resampler object for the given parameters. When <em class="parameter"><code>h_factor</code></em>
@@ -328,7 +328,7 @@ performed.</p>
 </tr>
 <tr>
 <td class="parameter_name"><p>format</p></td>
-<td class="parameter_description"><p>the <a class="link" href="gst-plugins-base-libs-gstvideo.html#GstVideoFormat" title="enum GstVideoFormat"><span class="type">GstVideoFormat</span></a></p></td>
+<td class="parameter_description"><p>the <a class="link" href="gst-plugins-base-libs-GstVideoAlignment.html#GstVideoFormat" title="enum GstVideoFormat"><span class="type">GstVideoFormat</span></a></p></td>
 <td class="parameter_annotations"> </td>
 </tr>
 <tr>

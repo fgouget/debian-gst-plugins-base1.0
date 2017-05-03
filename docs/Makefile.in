@@ -515,8 +515,8 @@ top_srcdir = @top_srcdir@
 @ENABLE_GTK_DOC_FALSE@PLUGIN_DOCS_DIRS = plugins
 @ENABLE_GTK_DOC_TRUE@@ENABLE_PLUGIN_DOCS_FALSE@PLUGIN_DOCS_DIRS = 
 @ENABLE_GTK_DOC_TRUE@@ENABLE_PLUGIN_DOCS_TRUE@PLUGIN_DOCS_DIRS = plugins
-SUBDIRS = design libs $(PLUGIN_DOCS_DIRS)
-DIST_SUBDIRS = design libs plugins
+SUBDIRS = libs $(PLUGIN_DOCS_DIRS)
+DIST_SUBDIRS = libs plugins
 EXTRA_DIST = \
         version.entities.in
 

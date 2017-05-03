@@ -132,6 +132,21 @@
 <td class="property_name"><a class="link" href="gst-plugins-base-plugins-videotestsrc.html#GstVideoTestSrc--yoffset" title="The “yoffset” property">yoffset</a></td>
 <td class="property_flags">Read / Write</td>
 </tr>
+<tr>
+<td class="property_type"><span class="type">GstVideoTestSrcAnimationMode</span></td>
+<td class="property_name"><a class="link" href="gst-plugins-base-plugins-videotestsrc.html#GstVideoTestSrc--animation-mode" title="The “animation-mode” property">animation-mode</a></td>
+<td class="property_flags">Read / Write</td>
+</tr>
+<tr>
+<td class="property_type"><a href="/usr/share/gtk-doc/html/glibglib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a></td>
+<td class="property_name"><a class="link" href="gst-plugins-base-plugins-videotestsrc.html#GstVideoTestSrc--flip" title="The “flip” property">flip</a></td>
+<td class="property_flags">Read / Write</td>
+</tr>
+<tr>
+<td class="property_type"><span class="type">GstVideoTestSrcMotionType</span></td>
+<td class="property_name"><a class="link" href="gst-plugins-base-plugins-videotestsrc.html#GstVideoTestSrc--motion" title="The “motion” property">motion</a></td>
+<td class="property_flags">Read / Write</td>
+</tr>
 </tbody>
 </table></div>
 </div>
@@ -170,8 +185,8 @@
 <p>The videotestsrc element is used to produce test video data in a wide variety
 of formats. The video test data produced can be controlled with the "pattern"
 property.</p>
-<div class="refsect2">
-<a name="id-1.2.56.7.3"></a><h3>Example launch line</h3>
+<div class="refsect3">
+<a name="id-1.2.60.7.3"></a><h4>Example launch line</h4>
 <div class="informalexample">
   <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
     <tbody>
@@ -182,12 +197,14 @@ property.</p>
     </tbody>
   </table>
 </div>
- Shows random noise in a video window.
+
+<p>
+ Shows random noise in a video window.</p>
 </div>
 <div class="refsynopsisdiv">
 <h2>Synopsis</h2>
 <div class="refsect2">
-<a name="id-1.2.56.7.4.1"></a><h3>Element Information</h3>
+<a name="id-1.2.60.7.4.1"></a><h3>Element Information</h3>
 <div class="variablelist"><table border="0" class="variablelist">
 <colgroup>
 <col align="left" valign="top">
@@ -213,7 +230,7 @@ property.</p>
 </div>
 <hr>
 <div class="refsect2">
-<a name="id-1.2.56.7.4.2"></a><h3>Element Pads</h3>
+<a name="id-1.2.60.7.4.2"></a><h3>Element Pads</h3>
 <div class="variablelist"><table border="0" class="variablelist">
 <colgroup>
 <col align="left" valign="top">
@@ -234,11 +251,11 @@ property.</p>
 </tr>
 <tr>
 <td><p><span class="term">details</span></p></td>
-<td>video/x-raw, format=(string){ I420, YV12, YUY2, UYVY, AYUV, RGBx, BGRx, xRGB, xBGR, RGBA, BGRA, ARGB, ABGR, RGB, BGR, Y41B, Y42B, YVYU, Y444, v210, v216, NV12, NV21, NV16, NV61, NV24, GRAY8, GRAY16_BE, GRAY16_LE, v308, IYU2, RGB16, BGR16, RGB15, BGR15, UYVP, A420, RGB8P, YUV9, YVU9, IYU1, ARGB64, AYUV64, r210, I420_10LE, I420_10BE, I422_10LE, I422_10BE, Y444_10LE, Y444_10BE, GBR, GBR_10LE, GBR_10BE, NV12_64Z32, A420_10LE, A420_10BE, A422_10LE, A422_10BE, A444_10LE, A444_10BE, P010_10LE, P010_10BE }, width=(int)[ 1, 2147483647 ], height=(int)[ 1, 2147483647 ], framerate=(fraction)[ 0/1, 2147483647/1 ]</td>
+<td>video/x-raw, format=(string){ I420, YV12, YUY2, UYVY, AYUV, RGBx, BGRx, xRGB, xBGR, RGBA, BGRA, ARGB, ABGR, RGB, BGR, Y41B, Y42B, YVYU, Y444, v210, v216, NV12, NV21, GRAY8, GRAY16_BE, GRAY16_LE, v308, RGB16, BGR16, RGB15, BGR15, UYVP, A420, RGB8P, YUV9, YVU9, IYU1, ARGB64, AYUV64, r210, I420_10BE, I420_10LE, I422_10BE, I422_10LE, Y444_10BE, Y444_10LE, GBR, GBR_10BE, GBR_10LE, NV16, NV24, NV12_64Z32, A420_10BE, A420_10LE, A422_10BE, A422_10LE, A444_10BE, A444_10LE, NV61, P010_10BE, P010_10LE, IYU2, VYUY, GBRA, GBRA_10BE, GBRA_10LE, GBR_12BE, GBR_12LE, GBRA_12BE, GBRA_12LE, I420_12BE, I420_12LE, I422_12BE, I422_12LE, Y444_12BE, Y444_12LE }, width=(int)[ 1, 2147483647 ], height=(int)[ 1, 2147483647 ], framerate=(fraction)[ 0/1, 2147483647/1 ], multiview-mode=(string){ mono, left, right }</td>
 </tr>
 <tr>
 <td><p><span class="term"></span></p></td>
-<td> video/x-bayer, format=(string){ bggr, rggb, grbg, gbrg }, width=(int)[ 1, 2147483647 ], height=(int)[ 1, 2147483647 ], framerate=(fraction)[ 0/1, 2147483647/1 ]</td>
+<td> video/x-bayer, format=(string){ bggr, rggb, grbg, gbrg }, width=(int)[ 1, 2147483647 ], height=(int)[ 1, 2147483647 ], framerate=(fraction)[ 0/1, 2147483647/1 ], multiview-mode=(string){ mono, left, right }</td>
 </tr>
 </tbody>
 </table></div>
@@ -612,6 +629,30 @@ patterns.  Default is white (0xffffffff).</p>
 <p>Zoneplate 2nd order products y offset.</p>
 <p>Flags: Read / Write</p>
 <p>Default value: 0</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GstVideoTestSrc--animation-mode"></a><h3>The <code class="literal">“animation-mode”</code> property</h3>
+<pre class="programlisting">  “animation-mode”           <span class="type">GstVideoTestSrcAnimationMode</span></pre>
+<p>For pattern=ball, which counter defines the position of the ball.</p>
+<p>Flags: Read / Write</p>
+<p>Default value: frame count</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GstVideoTestSrc--flip"></a><h3>The <code class="literal">“flip”</code> property</h3>
+<pre class="programlisting">  “flip”                     <a href="/usr/share/gtk-doc/html/glibglib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a></pre>
+<p>For pattern=ball, invert colors every second.</p>
+<p>Flags: Read / Write</p>
+<p>Default value: FALSE</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GstVideoTestSrc--motion"></a><h3>The <code class="literal">“motion”</code> property</h3>
+<pre class="programlisting">  “motion”                   <span class="type">GstVideoTestSrcMotionType</span></pre>
+<p>For pattern=ball, what motion the ball does.</p>
+<p>Flags: Read / Write</p>
+<p>Default value: Ball waves back and forth, up and down</p>
 </div>
 </div>
 </div>

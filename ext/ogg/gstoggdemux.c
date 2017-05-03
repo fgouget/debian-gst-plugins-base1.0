@@ -21,16 +21,17 @@
 
 /**
  * SECTION:element-oggdemux
+ * @title: oggdemux
  * @see_also: <link linkend="gst-plugins-base-plugins-oggmux">oggmux</link>
  *
  * This element demuxes ogg files into their encoded audio and video components.
  *
- * <refsect2>
- * <title>Example pipelines</title>
+ * ## Example pipelines
  * |[
  * gst-launch-1.0 -v filesrc location=test.ogg ! oggdemux ! vorbisdec ! audioconvert ! audioresample ! autoaudiosink
- * ]| Decodes a vorbis audio stream stored inside an ogg container and plays it.
- * </refsect2>
+ * ]|
+ *  Decodes a vorbis audio stream stored inside an ogg container and plays it.
+ *
  */
 
 
@@ -676,7 +677,7 @@ gst_ogg_demux_chain_peer (GstOggPad * pad, ogg_packet * packet,
           packet->granulepos);
       GST_DEBUG_OBJECT (ogg, "new granule %" G_GUINT64_FORMAT,
           pad->current_granule);
-    } else if (ogg->segment.rate > 0.0 && pad->current_granule != -1) {
+    } else if (pad->current_granule != -1) {
       pad->current_granule += duration;
       if (!delta_unit) {
         pad->keyframe_granule = pad->current_granule;
@@ -684,19 +685,23 @@ gst_ogg_demux_chain_peer (GstOggPad * pad, ogg_packet * packet,
       GST_DEBUG_OBJECT (ogg, "interpolating granule %" G_GUINT64_FORMAT,
           pad->current_granule);
     }
-    if (ogg->segment.rate < 0.0 && packet->granulepos == -1) {
-      /* negative rates, only set timestamp on the packets with a granulepos */
+
+    if (ogg->segment.rate < 0.0 && pad->current_granule == -1) {
+      /* negative rates, allow output of packets with no timestamp, let downstream reconstruct */
       out_timestamp = -1;
       out_duration = -1;
       out_offset = -1;
       out_offset_end = -1;
+      pad->prev_granule = -1;
     } else {
       /* we only push buffers after we have a valid granule. This is done so that
        * we nicely skip packets without a timestamp after a seek. This is ok
-       * because we base or seek on the packet after the page with the smaller
+       * because we base our seek on the packet after the page with the smaller
        * timestamp. */
-      if (pad->current_granule == -1)
+      if (pad->current_granule == -1) {
+        pad->prev_granule = -1;
         goto no_timestamp;
+      }
 
       if (pad->map.is_ogm) {
         out_timestamp = gst_ogg_stream_granule_to_time (&pad->map,
@@ -723,7 +728,7 @@ gst_ogg_demux_chain_peer (GstOggPad * pad, ogg_packet * packet,
             out_timestamp = gst_ogg_stream_granule_to_time (&pad->map,
                 pad->prev_granule);
           else
-            out_timestamp = 0;
+            out_timestamp = GST_CLOCK_TIME_NONE;
 
           if (pad->map.audio_clipping
               && pad->current_granule < pad->prev_granule + duration) {
@@ -802,9 +807,8 @@ gst_ogg_demux_chain_peer (GstOggPad * pad, ogg_packet * packet,
   /* Mark discont on the buffer */
   if (pad->discont) {
     GST_BUFFER_FLAG_SET (buf, GST_BUFFER_FLAG_DISCONT);
-    if GST_BUFFER_TIMESTAMP_IS_VALID
-      (buf)
-          pad->discont = FALSE;
+    if (ogg->segment.rate < 0.0 || GST_BUFFER_TIMESTAMP_IS_VALID (buf))
+      pad->discont = FALSE;
   }
 
   /* don't push the header packets when we are asked to skip them */
@@ -1029,10 +1033,12 @@ gst_ogg_pad_submit_packet (GstOggPad * pad, ogg_packet * packet)
     }
   }
 
-  granule = gst_ogg_stream_granulepos_to_granule (&pad->map,
+  GST_DEBUG_OBJECT (ogg, "%p packet has granulepos %" G_GINT64_FORMAT, pad,
       packet->granulepos);
+  granule =
+      gst_ogg_stream_granulepos_to_granule (&pad->map, packet->granulepos);
   if (granule > 0) {
-    GST_DEBUG_OBJECT (ogg, "%p has granulepos %" G_GINT64_FORMAT, pad, granule);
+    GST_DEBUG_OBJECT (ogg, "%p has granule %" G_GINT64_FORMAT, pad, granule);
     pad->current_granule = granule;
   } else if (granule == 0) {
     /* headers */
@@ -1307,6 +1313,8 @@ gst_ogg_demux_setup_first_granule (GstOggDemux * ogg, GstOggPad * pad,
   /* When we submit a page, we check if we have started tracking granules.
    * If not, we calculate the granule corresponding to the first packet
    * on the page. */
+  gboolean valid_granule = TRUE;
+
   if (pad->current_granule == -1) {
     ogg_int64_t granpos = ogg_page_granulepos (page);
     if (granpos > 0) {
@@ -1324,33 +1332,41 @@ gst_ogg_demux_setup_first_granule (GstOggDemux * ogg, GstOggPad * pad,
         int last_size = pad->map.last_size;
 
         memcpy (&os, &pad->map.stream, sizeof (os));
-        for (n = 0; n < packets; ++n) {
+        for (n = 0; valid_granule && n < packets; ++n) {
           int ret = ogg_stream_packetout (&os, &op);
           if (ret < 0) {
-            GST_WARNING_OBJECT (pad, "Failed to read packets off first page");
-            granule = -1;
+            /* This usually means a continued packet after a seek and we can't calc the first granule,
+             * but sometimes not - so if it's ret == -1 and first packet, try again */
+            if (ret == -1 && n == 0) {
+              n--;
+              continue;
+            }
+            GST_DEBUG_OBJECT (pad, "Failed to read packet off first page");
+            valid_granule = FALSE;
             break;
           }
           if (ret == 0) {
             GST_WARNING_OBJECT (pad,
                 "Short read getting %d packets off first page", packets);
-            granule = -1;
+            valid_granule = FALSE;
             break;
           }
           duration = gst_ogg_stream_get_packet_duration (&pad->map, &op);
-          GST_DEBUG_OBJECT (pad, "Packet %d has duration %" G_GINT64_FORMAT, n,
-              duration);
+          GST_DEBUG_OBJECT (pad, "Packet %d has duration %" G_GINT64_FORMAT,
+              n, duration);
           granule -= duration;
         }
         pad->map.last_size = last_size;
-        if (granule >= 0) {
-          pad->current_granule = granule;
-          GST_INFO_OBJECT (pad, "Starting with first granule %" G_GINT64_FORMAT,
-              granule);
-        } else {
-          pad->current_granule = 0;
-          GST_INFO_OBJECT (pad, "Extrapolated first granule is negative, "
-              "used to clip samples at start");
+        if (valid_granule) {
+          if (granule >= 0) {
+            pad->current_granule = granule;
+            GST_INFO_OBJECT (pad,
+                "Starting with first granule %" G_GINT64_FORMAT, granule);
+          } else {
+            pad->current_granule = 0;
+            GST_INFO_OBJECT (pad, "Extrapolated first granule is negative, "
+                "used to clip samples at start");
+          }
         }
       } else {
         GST_WARNING_OBJECT (pad,
@@ -1706,7 +1722,7 @@ gst_ogg_pad_handle_push_mode_state (GstOggPad * pad, ogg_page * page)
 
       if (pad->push_sync_time == GST_CLOCK_TIME_NONE)
         pad->push_sync_time = t;
-      GST_DEBUG_OBJECT (ogg, "Got timestamp %" GST_TIME_FORMAT " for %s",
+      GST_DEBUG_OBJECT (ogg, "Got PTS %" GST_TIME_FORMAT " for %s",
           GST_TIME_ARGS (t), gst_ogg_stream_get_media_type (&pad->map));
       sync_time = gst_ogg_demux_collect_sync_time (ogg, ogg->building_chain);
       if (sync_time == GST_CLOCK_TIME_NONE) {
@@ -2088,6 +2104,7 @@ gst_ogg_chain_free (GstOggChain * chain)
 static void
 gst_ogg_pad_mark_discont (GstOggPad * pad)
 {
+  GST_LOG_OBJECT (pad, "Marking discont on pad");
   pad->discont = TRUE;
   pad->map.last_size = 0;
 }
@@ -3098,7 +3115,7 @@ do_binary_search (GstOggDemux * ogg, GstOggChain * chain, gint64 begin,
         if (granuletime < pad->start_time)
           continue;
 
-        GST_LOG_OBJECT (ogg, "granulepos %" G_GINT64_FORMAT " maps to time %"
+        GST_LOG_OBJECT (ogg, "granulepos %" G_GINT64_FORMAT " maps to PTS %"
             GST_TIME_FORMAT, granulepos, GST_TIME_ARGS (granuletime));
 
         granuletime -= pad->start_time;
@@ -3309,7 +3326,7 @@ gst_ogg_demux_do_seek (GstOggDemux * ogg, GstSegment * segment,
     ts = gst_ogg_stream_get_end_time_for_granulepos (&pad->map, granulepos);
     if (GST_CLOCK_TIME_IS_VALID (ts)) {
       if (first_ts == GST_CLOCK_TIME_NONE) {
-        GST_WARNING_OBJECT (pad, "Locking on ts %" GST_TIME_FORMAT,
+        GST_WARNING_OBJECT (pad, "Locking on pts %" GST_TIME_FORMAT,
             GST_TIME_ARGS (ts));
         first_ts = ts;
       }
@@ -3329,8 +3346,12 @@ gst_ogg_demux_do_seek (GstOggDemux * ogg, GstSegment * segment,
       granule_time = gst_ogg_stream_get_end_time_for_granulepos (&pad->map,
           granulepos);
 
+      /* Convert to stream time */
+      granule_time -= pad->start_time;
+      granule_time += chain->begin_time;
+
       GST_LOG_OBJECT (ogg,
-          "looking at page with ts %" GST_TIME_FORMAT ", target %"
+          "looking at page with time %" GST_TIME_FORMAT ", target %"
           GST_TIME_FORMAT, GST_TIME_ARGS (granule_time),
           GST_TIME_ARGS (target));
       if (granule_time < target)
@@ -3351,16 +3372,21 @@ gst_ogg_demux_do_seek (GstOggDemux * ogg, GstSegment * segment,
     keyframe_time =
         gst_ogg_stream_granule_to_time (&pad->map, pad->keyframe_granule);
     GST_LOG_OBJECT (ogg,
-        "stream %08x granule time %" GST_TIME_FORMAT,
-        pad->map.serialno, GST_TIME_ARGS (keyframe_time));
+        "stream %08x keyframe granule PTS %" GST_TIME_FORMAT
+        " target %" GST_TIME_FORMAT,
+        pad->map.serialno, GST_TIME_ARGS (keyframe_time),
+        GST_TIME_ARGS (keytarget));
 
     /* collect smallest value */
     if (keyframe_time != -1) {
+      keyframe_time -= pad->start_time;
       keyframe_time += begintime;
       if (keyframe_time < keytarget) {
         serialno = pad->map.serialno;
         keytarget = keyframe_time;
         found_keyframe = TRUE;
+        GST_LOG_OBJECT (ogg, "storing keytarget %" GST_TIME_FORMAT,
+            GST_TIME_ARGS (keytarget));
       }
     }
 
@@ -4418,7 +4444,7 @@ gst_ogg_demux_update_chunk_size (GstOggDemux * ogg, ogg_page * page)
 }
 
 static GstFlowReturn
-gst_ogg_demux_handle_page (GstOggDemux * ogg, ogg_page * page)
+gst_ogg_demux_handle_page (GstOggDemux * ogg, ogg_page * page, gboolean discont)
 {
   GstOggPad *pad;
   gint64 granule;
@@ -4500,6 +4526,10 @@ gst_ogg_demux_handle_page (GstOggDemux * ogg, ogg_page * page)
     pad = gst_ogg_demux_find_pad (ogg, serialno);
   }
   if (pad) {
+    /* Reset granule interpolation if chaining in reverse (discont = TRUE) */
+    if (discont)
+      pad->current_granule = -1;
+
     result = gst_ogg_pad_submit_page (pad, page);
   } else {
     GST_PUSH_LOCK (ogg);
@@ -4578,7 +4608,7 @@ gst_ogg_demux_chain (GstPad * pad, GstObject * parent, GstBuffer * buffer)
       /* discontinuity in the pages */
       GST_DEBUG_OBJECT (ogg, "discont in page found, continuing");
     } else {
-      result = gst_ogg_demux_handle_page (ogg, &page);
+      result = gst_ogg_demux_handle_page (ogg, &page, FALSE);
       if (result < 0) {
         GST_DEBUG_OBJECT (ogg, "gst_ogg_demux_handle_page returned %d", result);
       }
@@ -4701,7 +4731,9 @@ gst_ogg_demux_loop_reverse (GstOggDemux * ogg)
     ogg->newsegment = NULL;
   }
 
-  ret = gst_ogg_demux_handle_page (ogg, &page);
+  GST_LOG_OBJECT (ogg, "Handling page at offset %" G_GINT64_FORMAT,
+      ogg->offset);
+  ret = gst_ogg_demux_handle_page (ogg, &page, TRUE);
 
 done:
   return ret;

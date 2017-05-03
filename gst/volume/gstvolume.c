@@ -24,17 +24,18 @@
 
 /**
  * SECTION:element-volume
+ * @title: volume
  *
  * The volume element changes the volume of the audio data.
  *
- * <refsect2>
- * <title>Example launch line</title>
+ * ## Example launch line
  * |[
  * gst-launch-1.0 -v -m audiotestsrc ! volume volume=0.5 ! level ! fakesink silent=TRUE
- * ]| This pipeline shows that the level of audiotestsrc has been halved
+ * ]|
+ *  This pipeline shows that the level of audiotestsrc has been halved
  * (peak values are around -6 dB and RMS around -9 dB) compared to
  * the same pipeline without the volume element.
- * </refsect2>
+ *
  */
 
 #ifdef HAVE_CONFIG_H
@@ -229,7 +230,7 @@ volume_choose_func (GstVolume * self, const GstAudioInfo * info)
 
 static gboolean
 volume_update_volume (GstVolume * self, const GstAudioInfo * info,
-    gfloat volume, gboolean mute)
+    gdouble volume, gboolean mute)
 {
   gboolean passthrough;
   gboolean res;
@@ -646,7 +647,7 @@ volume_setup (GstAudioFilter * filter, const GstAudioInfo * info)
 {
   gboolean res;
   GstVolume *self = GST_VOLUME (filter);
-  gfloat volume;
+  gdouble volume;
   gboolean mute;
 
   GST_OBJECT_LOCK (self);
@@ -686,7 +687,7 @@ volume_before_transform (GstBaseTransform * base, GstBuffer * buffer)
 {
   GstClockTime timestamp;
   GstVolume *self = GST_VOLUME (base);
-  gfloat volume;
+  gdouble volume;
   gboolean mute;
 
   timestamp = GST_BUFFER_TIMESTAMP (buffer);

@@ -398,11 +398,9 @@ user_function (<a class="link" href="gst-plugins-base-plugins-decodebin.html#Gst
                <a href="/usr/share/gtk-doc/html/glibglib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>      user_data)</pre>
 <p>This signal is emitted whenever decodebin finds a new stream. It is
 emitted before looking for any elements that can handle that stream.</p>
-<div class="note">
-  Invocation of signal handlers stops after the first signal handler
+<div class="blockquote"><blockquote class="blockquote"><p>  Invocation of signal handlers stops after the first signal handler
   returns <a href="/usr/share/gtk-doc/html/glibglib-Standard-Macros.html#FALSE:CAPS"><span class="type">FALSE</span></a>. Signal handlers are invoked in the order they were
-  connected in.
-</div>
+  connected in.</p></blockquote></div>
 <div class="refsect3">
 <a name="GstDecodeBin-autoplug-continue.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table class="informaltable" width="100%" border="0">
@@ -462,11 +460,9 @@ compatible factories, sorted by rank.</p>
  will be exposed as a final caps.</p>
 <p>If this function returns an empty array, the pad will be considered as
 having an unhandled type media type.</p>
-<div class="note">
-  Only the signal handler that is connected first will ever by invoked.
+<div class="blockquote"><blockquote class="blockquote"><p>  Only the signal handler that is connected first will ever by invoked.
   Don't connect signal handlers with the <a href="/usr/share/gtk-doc/html/gobjectgobject-Signals.html#G-CONNECT-AFTER:CAPS"><span class="type">G_CONNECT_AFTER</span></a> flag to this
-  signal, they will never be invoked!
-</div>
+  signal, they will never be invoked!</p></blockquote></div>
 <div class="refsect3">
 <a name="GstDecodeBin-autoplug-factories.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table class="informaltable" width="100%" border="0">
@@ -587,13 +583,11 @@ any element to it.</p>
 <p>A value of <span class="type">GST_AUTOPLUG_SELECT_SKIP</span> will skip <em class="parameter"><code>factory</code></em>
  and move to the
 next factory.</p>
-<div class="note">
-  The signal handler will not be invoked if any of the previously
+<div class="blockquote"><blockquote class="blockquote"><p>  The signal handler will not be invoked if any of the previously
   registered signal handlers (if any) return a value other than
   GST_AUTOPLUG_SELECT_TRY. Which also means that if you return
   GST_AUTOPLUG_SELECT_TRY from one signal handler, handlers that get
-  registered next (again, if any) can override that decision.
-</div>
+  registered next (again, if any) can override that decision.</p></blockquote></div>
 <div class="refsect3">
 <a name="GstDecodeBin-autoplug-select.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table class="informaltable" width="100%" border="0">
@@ -657,13 +651,11 @@ factory array.</p>
 <p>The callee should copy and modify <em class="parameter"><code>factories</code></em>
  or return <a href="/usr/share/gtk-doc/html/glibglib-Standard-Macros.html#NULL:CAPS"><span class="type">NULL</span></a> if the
 order should not change.</p>
-<div class="note">
-  Invocation of signal handlers stops after one signal handler has
+<div class="blockquote"><blockquote class="blockquote"><p>  Invocation of signal handlers stops after one signal handler has
   returned something else than <a href="/usr/share/gtk-doc/html/glibglib-Standard-Macros.html#NULL:CAPS"><span class="type">NULL</span></a>. Signal handlers are invoked in
   the order they were connected in.
   Don't connect signal handlers with the <a href="/usr/share/gtk-doc/html/gobjectgobject-Signals.html#G-CONNECT-AFTER:CAPS"><span class="type">G_CONNECT_AFTER</span></a> flag to this
-  signal, they will never be invoked!
-</div>
+  signal, they will never be invoked!</p></blockquote></div>
 <div class="refsect3">
 <a name="GstDecodeBin-autoplug-sort.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table class="informaltable" width="100%" border="0">

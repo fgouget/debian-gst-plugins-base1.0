@@ -83,8 +83,11 @@ typedef enum {
  * @GST_AUDIO_RING_BUFFER_FORMAT_TYPE_AC3: samples in AC3 format
  * @GST_AUDIO_RING_BUFFER_FORMAT_TYPE_EAC3: samples in EAC3 format
  * @GST_AUDIO_RING_BUFFER_FORMAT_TYPE_DTS: samples in DTS format
- * @GST_AUDIO_RING_BUFFER_FORMAT_TYPE_MPEG2_AAC: samples in MPEG-2 AAC format
- * @GST_AUDIO_RING_BUFFER_FORMAT_TYPE_MPEG4_AAC: samples in MPEG-4 AAC format
+ * @GST_AUDIO_RING_BUFFER_FORMAT_TYPE_MPEG2_AAC: samples in MPEG-2 AAC ADTS format
+ * @GST_AUDIO_RING_BUFFER_FORMAT_TYPE_MPEG4_AAC: samples in MPEG-4 AAC ADTS format
+ * @GST_AUDIO_RING_BUFFER_FORMAT_TYPE_MPEG2_AAC_RAW: samples in MPEG-2 AAC raw format (Since 1.12)
+ * @GST_AUDIO_RING_BUFFER_FORMAT_TYPE_MPEG4_AAC_RAW: samples in MPEG-4 AAC raw format (Since 1.12)
+ * @GST_AUDIO_RING_BUFFER_FORMAT_TYPE_FLAC: samples in FLAC format (Since 1.12)
  *
  * The format of the samples in the ringbuffer.
  */
@@ -101,7 +104,10 @@ typedef enum
   GST_AUDIO_RING_BUFFER_FORMAT_TYPE_EAC3,
   GST_AUDIO_RING_BUFFER_FORMAT_TYPE_DTS,
   GST_AUDIO_RING_BUFFER_FORMAT_TYPE_MPEG2_AAC,
-  GST_AUDIO_RING_BUFFER_FORMAT_TYPE_MPEG4_AAC
+  GST_AUDIO_RING_BUFFER_FORMAT_TYPE_MPEG4_AAC,
+  GST_AUDIO_RING_BUFFER_FORMAT_TYPE_MPEG2_AAC_RAW,
+  GST_AUDIO_RING_BUFFER_FORMAT_TYPE_MPEG4_AAC_RAW,
+  GST_AUDIO_RING_BUFFER_FORMAT_TYPE_FLAC
 } GstAudioRingBufferFormatType;
 
 /**
@@ -205,8 +211,10 @@ struct _GstAudioRingBuffer {
   gint                        may_start;
   gboolean                    active;
 
+  GDestroyNotify              cb_data_notify;
+
   /*< private >*/
-  gpointer _gst_reserved[GST_PADDING];
+  gpointer _gst_reserved[GST_PADDING - 1];
 };
 
 /**
@@ -260,9 +268,13 @@ struct _GstAudioRingBufferClass {
 GType gst_audio_ring_buffer_get_type(void);
 
 /* callback stuff */
-void            gst_audio_ring_buffer_set_callback    (GstAudioRingBuffer *buf,
-                                                       GstAudioRingBufferCallback cb,
-                                                       gpointer user_data);
+void            gst_audio_ring_buffer_set_callback      (GstAudioRingBuffer *buf,
+                                                         GstAudioRingBufferCallback cb,
+                                                         gpointer user_data);
+void            gst_audio_ring_buffer_set_callback_full (GstAudioRingBuffer *buf,
+                                                         GstAudioRingBufferCallback cb,
+                                                         gpointer user_data,
+                                                         GDestroyNotify notify);
 
 gboolean        gst_audio_ring_buffer_parse_caps      (GstAudioRingBufferSpec *spec, GstCaps *caps);
 void            gst_audio_ring_buffer_debug_spec_caps (GstAudioRingBufferSpec *spec);

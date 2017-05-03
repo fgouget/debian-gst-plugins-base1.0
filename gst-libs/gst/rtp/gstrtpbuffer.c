@@ -20,16 +20,14 @@
 
 /**
  * SECTION:gstrtpbuffer
+ * @title: GstRTPBuffer
  * @short_description: Helper methods for dealing with RTP buffers
  * @see_also: #GstRTPBasePayload, #GstRTPBaseDepayload, gstrtcpbuffer
  *
- * <refsect2>
- * <para>
- * The GstRTPBuffer helper functions makes it easy to parse and create regular 
+ * The GstRTPBuffer helper functions makes it easy to parse and create regular
  * #GstBuffer objects that contain RTP payloads. These buffers are typically of
  * 'application/x-rtp' #GstCaps.
- * </para>
- * </refsect2>
+ *
  */
 
 #include "gstrtpbuffer.h"
@@ -658,7 +656,7 @@ gst_rtp_buffer_pad_to (GstRTPBuffer * rtp, guint len)
  * @rtp: the RTP packet
  *
  * Check if the extension bit is set on the RTP packet in @buffer.
- * 
+ *
  * Returns: TRUE if @buffer has the extension bit set.
  */
 gboolean
@@ -693,7 +691,7 @@ gst_rtp_buffer_set_extension (GstRTPBuffer * rtp, gboolean extension)
  *
  * If @buffer did not contain an extension, this function will return %FALSE
  * with @bits, @data and @wordlen unchanged.
- * 
+ *
  * Returns: TRUE if @buffer had the extension bit set.
  */
 gboolean
@@ -757,20 +755,45 @@ gst_rtp_buffer_get_extension_bytes (GstRTPBuffer * rtp, guint16 * bits)
   return g_bytes_new (buf_data, 4 * buf_len);
 }
 
+static gboolean
+gst_rtp_buffer_map_payload (GstRTPBuffer * rtp)
+{
+  guint hlen, plen;
+  guint idx, length;
+  gsize skip;
+
+  if (rtp->map[2].memory != NULL)
+    return TRUE;
+
+  hlen = gst_rtp_buffer_get_header_len (rtp);
+  plen = gst_buffer_get_size (rtp->buffer) - hlen - rtp->size[3];
+
+  if (!gst_buffer_find_memory (rtp->buffer, hlen, plen, &idx, &length, &skip))
+    return FALSE;
+
+  if (!gst_buffer_map_range (rtp->buffer, idx, length, &rtp->map[2],
+          rtp->map[0].flags))
+    return FALSE;
+
+  rtp->data[2] = rtp->map[2].data + skip;
+  rtp->size[2] = plen;
+
+  return TRUE;
+}
+
 /* ensure header, payload and padding are in separate buffers */
 static void
 ensure_buffers (GstRTPBuffer * rtp)
 {
   guint i, pos;
-  gsize offset;
   gboolean changed = FALSE;
 
   /* make sure payload is mapped */
-  gst_rtp_buffer_get_payload (rtp);
+  gst_rtp_buffer_map_payload (rtp);
 
   for (i = 0, pos = 0; i < 4; i++) {
     if (rtp->size[i]) {
-      offset = rtp->map[i].data - (guint8 *) rtp->data[i];
+      gsize offset = (guint8 *) rtp->data[i] - rtp->map[i].data;
 
       if (offset != 0 || rtp->map[i].size != rtp->size[i]) {
         GstMemory *mem;
@@ -866,7 +889,7 @@ gst_rtp_buffer_set_extension_data (GstRTPBuffer * rtp, guint16 bits,
  * @rtp: the RTP packet
  *
  * Get the SSRC of the RTP packet in @buffer.
- * 
+ *
  * Returns: the SSRC of @buffer in host order.
  */
 guint32
@@ -893,7 +916,7 @@ gst_rtp_buffer_set_ssrc (GstRTPBuffer * rtp, guint32 ssrc)
  * @rtp: the RTP packet
  *
  * Get the CSRC count of the RTP packet in @buffer.
- * 
+ *
  * Returns: the CSRC count of @buffer.
  */
 guint8
@@ -908,7 +931,7 @@ gst_rtp_buffer_get_csrc_count (GstRTPBuffer * rtp)
  * @idx: the index of the CSRC to get
  *
  * Get the CSRC at index @idx in @buffer.
- * 
+ *
  * Returns: the CSRC at index @idx in host order.
  */
 guint32
@@ -1140,25 +1163,11 @@ gst_rtp_buffer_get_payload_len (GstRTPBuffer * rtp)
 gpointer
 gst_rtp_buffer_get_payload (GstRTPBuffer * rtp)
 {
-  guint hlen, plen;
-  guint idx, length;
-  gsize skip;
-
   if (rtp->data[2])
     return rtp->data[2];
 
-  hlen = gst_rtp_buffer_get_header_len (rtp);
-  plen = gst_buffer_get_size (rtp->buffer) - hlen - rtp->size[3];
-
-  if (!gst_buffer_find_memory (rtp->buffer, hlen, plen, &idx, &length, &skip))
+  if (!gst_rtp_buffer_map_payload (rtp))
     return NULL;
-
-  if (!gst_buffer_map_range (rtp->buffer, idx, length, &rtp->map[2],
-          rtp->map[0].flags))
-    return NULL;
-
-  rtp->data[2] = rtp->map[2].data + skip;
-  rtp->size[2] = plen;
 
   return rtp->data[2];
 }

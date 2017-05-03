@@ -2,11 +2,11 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>appsink: GStreamer Base Plugins 1.0 Library Reference Manual</title>
+<title>GstAppSink: GStreamer Base Plugins 1.0 Library Reference Manual</title>
 <meta name="generator" content="DocBook XSL Stylesheets V1.79.1">
 <link rel="home" href="index.html" title="GStreamer Base Plugins 1.0 Library Reference Manual">
 <link rel="up" href="gstreamer-app.html" title="App Library">
-<link rel="prev" href="gst-plugins-base-libs-appsrc.html" title="appsrc">
+<link rel="prev" href="gst-plugins-base-libs-appsrc.html" title="GstAppSrc">
 <link rel="next" href="gstreamer-audio.html" title="Audio Library">
 <meta name="generator" content="GTK-Doc V1.25 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
@@ -26,8 +26,8 @@
 <a name="gst-plugins-base-libs-appsink"></a><div class="titlepage"></div>
 <div class="refnamediv"><table width="100%"><tr>
 <td valign="top">
-<h2><span class="refentrytitle"><a name="gst-plugins-base-libs-appsink.top_of_page"></a>appsink</span></h2>
-<p>appsink — Easy way for applications to extract samples from a
+<h2><span class="refentrytitle"><a name="gst-plugins-base-libs-appsink.top_of_page"></a>GstAppSink</span></h2>
+<p>GstAppSink — Easy way for applications to extract samples from a
     pipeline</p>
 </td>
 <td class="gallery_image" valign="top" align="right"></td>
@@ -142,6 +142,38 @@
 </td>
 <td class="function_name">
 <a class="link" href="gst-plugins-base-libs-appsink.html#gst-app-sink-try-pull-sample" title="gst_app_sink_try_pull_sample ()">gst_app_sink_try_pull_sample</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="/usr/share/gtk-doc/html/glibglib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gst-plugins-base-libs-appsink.html#gst-app-sink-get-buffer-list-support" title="gst_app_sink_get_buffer_list_support ()">gst_app_sink_get_buffer_list_support</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gst-plugins-base-libs-appsink.html#gst-app-sink-set-buffer-list-support" title="gst_app_sink_set_buffer_list_support ()">gst_app_sink_set_buffer_list_support</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="/usr/share/gtk-doc/html/glibglib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gst-plugins-base-libs-appsink.html#gst-app-sink-get-wait-on-eos" title="gst_app_sink_get_wait_on_eos ()">gst_app_sink_get_wait_on_eos</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gst-plugins-base-libs-appsink.html#gst-app-sink-set-wait-on-eos" title="gst_app_sink_set_wait_on_eos ()">gst_app_sink_set_wait_on_eos</a> <span class="c_punctuation">()</span>
 </td>
 </tr>
 <tr>
@@ -652,6 +684,130 @@ Call <a href="/usr/share/gtk-doc/html/gstreamer-1.0GstSample.html#gst-sample-unr
 <p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
 </div>
 <p class="since">Since: 1.10</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gst-app-sink-get-buffer-list-support"></a><h3>gst_app_sink_get_buffer_list_support ()</h3>
+<pre class="programlisting"><a href="/usr/share/gtk-doc/html/glibglib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+gst_app_sink_get_buffer_list_support (<em class="parameter"><code><a href="/usr/share/gtk-doc/html/gst-plugins-base-plugins-1.0gst-plugins-base-plugins-appsink.html#GstAppSink-struct"><span class="type">GstAppSink</span></a> *appsink</code></em>);</pre>
+<p>Check if <em class="parameter"><code>appsink</code></em>
+ supports buffer lists.</p>
+<div class="refsect3">
+<a name="gst-app-sink-get-buffer-list-support.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>appsink</p></td>
+<td class="parameter_description"><p>a <a href="/usr/share/gtk-doc/html/gst-plugins-base-plugins-1.0gst-plugins-base-plugins-appsink.html#GstAppSink-struct"><span class="type">GstAppSink</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="gst-app-sink-get-buffer-list-support.returns"></a><h4>Returns</h4>
+<p> <a href="/usr/share/gtk-doc/html/glibglib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if <em class="parameter"><code>appsink</code></em>
+supports buffer lists.</p>
+</div>
+<p class="since">Since: 1.12</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gst-app-sink-set-buffer-list-support"></a><h3>gst_app_sink_set_buffer_list_support ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+gst_app_sink_set_buffer_list_support (<em class="parameter"><code><a href="/usr/share/gtk-doc/html/gst-plugins-base-plugins-1.0gst-plugins-base-plugins-appsink.html#GstAppSink-struct"><span class="type">GstAppSink</span></a> *appsink</code></em>,
+                                      <em class="parameter"><code><a href="/usr/share/gtk-doc/html/glibglib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> enable_lists</code></em>);</pre>
+<p>Instruct <em class="parameter"><code>appsink</code></em>
+ to enable or disable buffer list support.</p>
+<p>For backwards-compatibility reasons applications need to opt in
+to indicate that they will be able to handle buffer lists.</p>
+<div class="refsect3">
+<a name="gst-app-sink-set-buffer-list-support.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>appsink</p></td>
+<td class="parameter_description"><p>a <a href="/usr/share/gtk-doc/html/gst-plugins-base-plugins-1.0gst-plugins-base-plugins-appsink.html#GstAppSink-struct"><span class="type">GstAppSink</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>enable_lists</p></td>
+<td class="parameter_description"><p>enable or disable buffer list support</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: 1.12</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gst-app-sink-get-wait-on-eos"></a><h3>gst_app_sink_get_wait_on_eos ()</h3>
+<pre class="programlisting"><a href="/usr/share/gtk-doc/html/glibglib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+gst_app_sink_get_wait_on_eos (<em class="parameter"><code><a href="/usr/share/gtk-doc/html/gst-plugins-base-plugins-1.0gst-plugins-base-plugins-appsink.html#GstAppSink-struct"><span class="type">GstAppSink</span></a> *appsink</code></em>);</pre>
+<p>Check if <em class="parameter"><code>appsink</code></em>
+ will wait for all buffers to be consumed when an EOS is
+received.</p>
+<div class="refsect3">
+<a name="gst-app-sink-get-wait-on-eos.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>appsink</p></td>
+<td class="parameter_description"><p>a <a href="/usr/share/gtk-doc/html/gst-plugins-base-plugins-1.0gst-plugins-base-plugins-appsink.html#GstAppSink-struct"><span class="type">GstAppSink</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="gst-app-sink-get-wait-on-eos.returns"></a><h4>Returns</h4>
+<p> <a href="/usr/share/gtk-doc/html/glibglib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if <em class="parameter"><code>appsink</code></em>
+will wait for all buffers to be consumed when an
+EOS is received.</p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gst-app-sink-set-wait-on-eos"></a><h3>gst_app_sink_set_wait_on_eos ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+gst_app_sink_set_wait_on_eos (<em class="parameter"><code><a href="/usr/share/gtk-doc/html/gst-plugins-base-plugins-1.0gst-plugins-base-plugins-appsink.html#GstAppSink-struct"><span class="type">GstAppSink</span></a> *appsink</code></em>,
+                              <em class="parameter"><code><a href="/usr/share/gtk-doc/html/glibglib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> wait</code></em>);</pre>
+<p>Instruct <em class="parameter"><code>appsink</code></em>
+ to wait for all buffers to be consumed when an EOS is received.</p>
+<div class="refsect3">
+<a name="gst-app-sink-set-wait-on-eos.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>appsink</p></td>
+<td class="parameter_description"><p>a <a href="/usr/share/gtk-doc/html/gst-plugins-base-plugins-1.0gst-plugins-base-plugins-appsink.html#GstAppSink-struct"><span class="type">GstAppSink</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>wait</p></td>
+<td class="parameter_description"><p>the new state</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
 </div>
 <hr>
 <div class="refsect2">

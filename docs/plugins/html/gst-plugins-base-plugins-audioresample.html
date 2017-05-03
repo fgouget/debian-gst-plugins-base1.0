@@ -53,17 +53,17 @@
 <td class="property_flags">Read / Write</td>
 </tr>
 <tr>
-<td class="property_type"><span class="type">GstAudioResamplerFilterMode</span></td>
+<td class="property_type"><a href="../html/gst-plugins-base-libs-GstAudio.html#GstAudioResamplerFilterMode"><span class="type">GstAudioResamplerFilterMode</span></a></td>
 <td class="property_name"><a class="link" href="gst-plugins-base-plugins-audioresample.html#GstAudioResample--sinc-filter-mode" title="The “sinc-filter-mode” property">sinc-filter-mode</a></td>
 <td class="property_flags">Read / Write</td>
 </tr>
 <tr>
-<td class="property_type"><span class="type">GstAudioResamplerMethod</span></td>
+<td class="property_type"><a href="../html/gst-plugins-base-libs-GstAudio.html#GstAudioResamplerMethod"><span class="type">GstAudioResamplerMethod</span></a></td>
 <td class="property_name"><a class="link" href="gst-plugins-base-plugins-audioresample.html#GstAudioResample--resample-method" title="The “resample-method” property">resample-method</a></td>
 <td class="property_flags">Read / Write</td>
 </tr>
 <tr>
-<td class="property_type"><span class="type">GstAudioResamplerFilterInterpolation</span></td>
+<td class="property_type"><a href="../html/gst-plugins-base-libs-GstAudio.html#GstAudioResamplerFilterInterpolation"><span class="type">GstAudioResamplerFilterInterpolation</span></a></td>
 <td class="property_name"><a class="link" href="gst-plugins-base-plugins-audioresample.html#GstAudioResample--sinc-filter-interpolation" title="The “sinc-filter-interpolation” property">sinc-filter-interpolation</a></td>
 <td class="property_flags">Read / Write</td>
 </tr>
@@ -104,8 +104,8 @@ Doing so can drastically reduce CPU usage (4x faster with 44.1 -&gt; 48 kHz conv
 example), at the cost of increased memory consumption, plus the sinc table takes longer
 to initialize when the element is created. A third mode exists, which uses the full table
 unless said table would become too large, in which case the interpolated one is used instead.</p>
-<div class="refsect2">
-<a name="id-1.2.10.7.4"></a><h3>Example launch line</h3>
+<div class="refsect3">
+<a name="id-1.2.10.7.4"></a><h4>Example launch line</h4>
 <div class="informalexample">
   <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
     <tbody>
@@ -116,9 +116,11 @@ unless said table would become too large, in which case the interpolated one is 
     </tbody>
   </table>
 </div>
+
+<p>
  Decode an audio file and downsample it to 8Khz and play sound.
 To create the Ogg/Vorbis file refer to the documentation of vorbisenc.
-This assumes there is an audio sink that will accept/handle 8kHz audio.
+This assumes there is an audio sink that will accept/handle 8kHz audio.</p>
 </div>
 <div class="refsynopsisdiv">
 <h2>Synopsis</h2>
@@ -234,7 +236,7 @@ This assumes there is an audio sink that will accept/handle 8kHz audio.
 <hr>
 <div class="refsect2">
 <a name="GstAudioResample--sinc-filter-mode"></a><h3>The <code class="literal">“sinc-filter-mode”</code> property</h3>
-<pre class="programlisting">  “sinc-filter-mode”         <span class="type">GstAudioResamplerFilterMode</span></pre>
+<pre class="programlisting">  “sinc-filter-mode”         <a href="../html/gst-plugins-base-libs-GstAudio.html#GstAudioResamplerFilterMode"><span class="type">GstAudioResamplerFilterMode</span></a></pre>
 <p>What sinc filter table mode to use.</p>
 <p>Flags: Read / Write</p>
 <p>Default value: GST_AUDIO_RESAMPLER_FILTER_MODE_AUTO</p>
@@ -242,7 +244,7 @@ This assumes there is an audio sink that will accept/handle 8kHz audio.
 <hr>
 <div class="refsect2">
 <a name="GstAudioResample--resample-method"></a><h3>The <code class="literal">“resample-method”</code> property</h3>
-<pre class="programlisting">  “resample-method”          <span class="type">GstAudioResamplerMethod</span></pre>
+<pre class="programlisting">  “resample-method”          <a href="../html/gst-plugins-base-libs-GstAudio.html#GstAudioResamplerMethod"><span class="type">GstAudioResamplerMethod</span></a></pre>
 <p>What resample method to use.</p>
 <p>Flags: Read / Write</p>
 <p>Default value: GST_AUDIO_RESAMPLER_METHOD_KAISER</p>
@@ -250,7 +252,7 @@ This assumes there is an audio sink that will accept/handle 8kHz audio.
 <hr>
 <div class="refsect2">
 <a name="GstAudioResample--sinc-filter-interpolation"></a><h3>The <code class="literal">“sinc-filter-interpolation”</code> property</h3>
-<pre class="programlisting">  “sinc-filter-interpolation” <span class="type">GstAudioResamplerFilterInterpolation</span></pre>
+<pre class="programlisting">  “sinc-filter-interpolation” <a href="../html/gst-plugins-base-libs-GstAudio.html#GstAudioResamplerFilterInterpolation"><span class="type">GstAudioResamplerFilterInterpolation</span></a></pre>
 <p>How to interpolate the sinc filter table.</p>
 <p>Flags: Read / Write</p>
 <p>Default value: GST_AUDIO_RESAMPLER_FILTER_INTERPOLATION_CUBIC</p>

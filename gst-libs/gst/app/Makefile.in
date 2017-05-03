@@ -99,6 +99,7 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
+@HAVE_INTROSPECTION_TRUE@am__append_1 = $(BUILT_GIRSOURCES) $(typelibs_DATA)
 subdir = gst-libs/gst/app
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/common/m4/as-ac-expand.m4 \
@@ -172,6 +173,7 @@ am__uninstall_files_from_dir = { \
   }
 am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(girdir)" \
 	"$(DESTDIR)$(typelibsdir)" \
+	"$(DESTDIR)$(libgstapp_@GST_API_VERSION@includedir)" \
 	"$(DESTDIR)$(libgstapp_@GST_API_VERSION@includedir)"
 LTLIBRARIES = $(lib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
@@ -179,8 +181,13 @@ libgstapp_@GST_API_VERSION@_la_DEPENDENCIES = $(am__DEPENDENCIES_1)
 am_libgstapp_@GST_API_VERSION@_la_OBJECTS =  \
 	libgstapp_@GST_API_VERSION@_la-gstappsrc.lo \
 	libgstapp_@GST_API_VERSION@_la-gstappsink.lo
+am__objects_1 = libgstapp_@GST_API_VERSION@_la-app-enumtypes.lo
+am__objects_2 =
+am__objects_3 = $(am__objects_1) $(am__objects_2)
+nodist_libgstapp_@GST_API_VERSION@_la_OBJECTS = $(am__objects_3)
 libgstapp_@GST_API_VERSION@_la_OBJECTS =  \
-	$(am_libgstapp_@GST_API_VERSION@_la_OBJECTS)
+	$(am_libgstapp_@GST_API_VERSION@_la_OBJECTS) \
+	$(nodist_libgstapp_@GST_API_VERSION@_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
@@ -223,7 +230,8 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(libgstapp_@GST_API_VERSION@_la_SOURCES)
+SOURCES = $(libgstapp_@GST_API_VERSION@_la_SOURCES) \
+	$(nodist_libgstapp_@GST_API_VERSION@_la_SOURCES)
 DIST_SOURCES = $(libgstapp_@GST_API_VERSION@_la_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
@@ -231,7 +239,8 @@ am__can_run_installinfo = \
     *) (install-info --version) >/dev/null 2>&1;; \
   esac
 DATA = $(gir_DATA) $(typelibs_DATA)
-HEADERS = $(libgstapp_@GST_API_VERSION@include_HEADERS)
+HEADERS = $(libgstapp_@GST_API_VERSION@include_HEADERS) \
+	$(nodist_libgstapp_@GST_API_VERSION@include_HEADERS)
 am__tagged_files = $(HEADERS) $(SOURCES) $(TAGS_FILES) $(LISP)
 am__DIST_COMMON = $(srcdir)/Makefile.in \
 	$(top_srcdir)/common/gst-glib-gen.mak $(top_srcdir)/depcomp
@@ -540,9 +549,14 @@ top_srcdir = @top_srcdir@
 lib_LTLIBRARIES = libgstapp-@GST_API_VERSION@.la
 glib_enum_define = GST_APP
 glib_gen_prefix = __gst_app
-glib_gen_basename = gstapp
+glib_gen_basename = app
+glib_enum_headers = gstappsrc.h
+built_sources = app-enumtypes.c
+built_headers = app-enumtypes.h
+BUILT_SOURCES = $(built_sources) $(built_headers)
 enum_headers = $(foreach h,$(glib_enum_headers),\n\#include \"$(h)\")
-libgstapp_@GST_API_VERSION@_la_SOURCES = gstappsrc.c gstappsink.c 
+libgstapp_@GST_API_VERSION@_la_SOURCES = gstappsrc.c gstappsink.c
+nodist_libgstapp_@GST_API_VERSION@_la_SOURCES = $(BUILT_SOURCES)
 libgstapp_@GST_API_VERSION@_la_CFLAGS = $(GST_PLUGINS_BASE_CFLAGS) \
 	$(GST_BASE_CFLAGS) $(GST_CFLAGS)
 
@@ -554,8 +568,13 @@ libgstapp_@GST_API_VERSION@include_HEADERS = \
 	gstappsrc.h \
 	gstappsink.h
 
+nodist_libgstapp_@GST_API_VERSION@include_HEADERS = app-enumtypes.h
+CLEANFILES = $(BUILT_SOURCES) $(am__append_1)
 @HAVE_INTROSPECTION_TRUE@BUILT_GIRSOURCES = GstApp-@GST_API_VERSION@.gir
-@HAVE_INTROSPECTION_TRUE@gir_headers = $(patsubst %,$(srcdir)/%, $(libgstapp_@GST_API_VERSION@include_HEADERS))
+@HAVE_INTROSPECTION_TRUE@gir_headers = $(patsubst %,$(srcdir)/%, \
+@HAVE_INTROSPECTION_TRUE@	$(libgstapp_@GST_API_VERSION@include_HEADERS)) \
+@HAVE_INTROSPECTION_TRUE@	$(patsubst %,$(builddir)/%, \
+@HAVE_INTROSPECTION_TRUE@	$(nodist_libgstapp_@GST_API_VERSION@include_HEADERS))
 @HAVE_INTROSPECTION_TRUE@gir_sources = $(patsubst %,$(srcdir)/%, \
 @HAVE_INTROSPECTION_TRUE@	$(libgstapp_@GST_API_VERSION@_la_SOURCES)) \
 @HAVE_INTROSPECTION_TRUE@	$(patsubst %,$(builddir)/%, \
@@ -567,8 +586,8 @@ libgstapp_@GST_API_VERSION@include_HEADERS = \
 @HAVE_INTROSPECTION_TRUE@gir_DATA = $(BUILT_GIRSOURCES)
 @HAVE_INTROSPECTION_TRUE@typelibsdir = $(libdir)/girepository-1.0/
 @HAVE_INTROSPECTION_TRUE@typelibs_DATA = $(BUILT_GIRSOURCES:.gir=.typelib)
-@HAVE_INTROSPECTION_TRUE@CLEANFILES = $(BUILT_GIRSOURCES) $(typelibs_DATA)
-all: all-am
+all: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) all-am
 
 .SUFFIXES:
 .SUFFIXES: .c .lo .o .obj
@@ -647,6 +666,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgstapp_@GST_API_VERSION@_la-app-enumtypes.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgstapp_@GST_API_VERSION@_la-gstappsink.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgstapp_@GST_API_VERSION@_la-gstappsrc.Plo@am__quote@
 
@@ -687,6 +707,13 @@ libgstapp_@GST_API_VERSION@_la-gstappsink.lo: gstappsink.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gstappsink.c' object='libgstapp_@GST_API_VERSION@_la-gstappsink.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgstapp_@GST_API_VERSION@_la_CFLAGS) $(CFLAGS) -c -o libgstapp_@GST_API_VERSION@_la-gstappsink.lo `test -f 'gstappsink.c' || echo '$(srcdir)/'`gstappsink.c
+
+libgstapp_@GST_API_VERSION@_la-app-enumtypes.lo: app-enumtypes.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgstapp_@GST_API_VERSION@_la_CFLAGS) $(CFLAGS) -MT libgstapp_@GST_API_VERSION@_la-app-enumtypes.lo -MD -MP -MF $(DEPDIR)/libgstapp_@GST_API_VERSION@_la-app-enumtypes.Tpo -c -o libgstapp_@GST_API_VERSION@_la-app-enumtypes.lo `test -f 'app-enumtypes.c' || echo '$(srcdir)/'`app-enumtypes.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgstapp_@GST_API_VERSION@_la-app-enumtypes.Tpo $(DEPDIR)/libgstapp_@GST_API_VERSION@_la-app-enumtypes.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='app-enumtypes.c' object='libgstapp_@GST_API_VERSION@_la-app-enumtypes.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgstapp_@GST_API_VERSION@_la_CFLAGS) $(CFLAGS) -c -o libgstapp_@GST_API_VERSION@_la-app-enumtypes.lo `test -f 'app-enumtypes.c' || echo '$(srcdir)/'`app-enumtypes.c
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -756,6 +783,27 @@ uninstall-libgstapp_@GST_API_VERSION@includeHEADERS:
 	@list='$(libgstapp_@GST_API_VERSION@include_HEADERS)'; test -n "$(libgstapp_@GST_API_VERSION@includedir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
 	dir='$(DESTDIR)$(libgstapp_@GST_API_VERSION@includedir)'; $(am__uninstall_files_from_dir)
+install-nodist_libgstapp_@GST_API_VERSION@includeHEADERS: $(nodist_libgstapp_@GST_API_VERSION@include_HEADERS)
+	@$(NORMAL_INSTALL)
+	@list='$(nodist_libgstapp_@GST_API_VERSION@include_HEADERS)'; test -n "$(libgstapp_@GST_API_VERSION@includedir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(libgstapp_@GST_API_VERSION@includedir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(libgstapp_@GST_API_VERSION@includedir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_HEADER) $$files '$(DESTDIR)$(libgstapp_@GST_API_VERSION@includedir)'"; \
+	  $(INSTALL_HEADER) $$files "$(DESTDIR)$(libgstapp_@GST_API_VERSION@includedir)" || exit $$?; \
+	done
+
+uninstall-nodist_libgstapp_@GST_API_VERSION@includeHEADERS:
+	@$(NORMAL_UNINSTALL)
+	@list='$(nodist_libgstapp_@GST_API_VERSION@include_HEADERS)'; test -n "$(libgstapp_@GST_API_VERSION@includedir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(libgstapp_@GST_API_VERSION@includedir)'; $(am__uninstall_files_from_dir)
 tags TAGS:
 
 ctags CTAGS:
@@ -794,13 +842,15 @@ distdir: $(DISTFILES)
 	  fi; \
 	done
 check-am: all-am
-check: check-am
+check: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) check-am
 all-am: Makefile $(LTLIBRARIES) $(DATA) $(HEADERS)
 installdirs:
-	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(girdir)" "$(DESTDIR)$(typelibsdir)" "$(DESTDIR)$(libgstapp_@GST_API_VERSION@includedir)"; do \
+	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(girdir)" "$(DESTDIR)$(typelibsdir)" "$(DESTDIR)$(libgstapp_@GST_API_VERSION@includedir)" "$(DESTDIR)$(libgstapp_@GST_API_VERSION@includedir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
-install: install-am
+install: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) install-am
 install-exec: install-exec-am
 install-data: install-data-am
 uninstall: uninstall-am
@@ -831,6 +881,7 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
+	-test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
 clean: clean-am
 
 clean-am: clean-generic clean-libLTLIBRARIES clean-libtool \
@@ -855,6 +906,7 @@ info-am:
 
 install-data-am: install-girDATA \
 	install-libgstapp_@GST_API_VERSION@includeHEADERS \
+	install-nodist_libgstapp_@GST_API_VERSION@includeHEADERS \
 	install-typelibsDATA
 
 install-dvi: install-dvi-am
@@ -903,9 +955,10 @@ ps-am:
 
 uninstall-am: uninstall-girDATA uninstall-libLTLIBRARIES \
 	uninstall-libgstapp_@GST_API_VERSION@includeHEADERS \
+	uninstall-nodist_libgstapp_@GST_API_VERSION@includeHEADERS \
 	uninstall-typelibsDATA
 
-.MAKE: install-am install-strip
+.MAKE: all check install install-am install-strip
 
 .PHONY: all all-am check check-am clean clean-generic \
 	clean-libLTLIBRARIES clean-libtool cscopelist-am ctags-am \
@@ -916,6 +969,7 @@ uninstall-am: uninstall-girDATA uninstall-libLTLIBRARIES \
 	install-html install-html-am install-info install-info-am \
 	install-libLTLIBRARIES \
 	install-libgstapp_@GST_API_VERSION@includeHEADERS install-man \
+	install-nodist_libgstapp_@GST_API_VERSION@includeHEADERS \
 	install-pdf install-pdf-am install-ps install-ps-am \
 	install-strip install-typelibsDATA installcheck \
 	installcheck-am installdirs maintainer-clean \
@@ -924,6 +978,7 @@ uninstall-am: uninstall-girDATA uninstall-libLTLIBRARIES \
 	tags-am uninstall uninstall-am uninstall-girDATA \
 	uninstall-libLTLIBRARIES \
 	uninstall-libgstapp_@GST_API_VERSION@includeHEADERS \
+	uninstall-nodist_libgstapp_@GST_API_VERSION@includeHEADERS \
 	uninstall-typelibsDATA
 
 .PRECIOUS: Makefile

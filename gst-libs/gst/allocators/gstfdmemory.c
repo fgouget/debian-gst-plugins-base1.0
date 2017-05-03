@@ -20,6 +20,7 @@
 
 /**
  * SECTION:gstfdmemory
+ * @title: GstFdAllocator
  * @short_description: Memory wrapper for fd backed memory
  * @see_also: #GstMemory
  *
@@ -110,9 +111,20 @@ gst_fd_mem_map (GstMemory * gmem, gsize maxsize, GstMapFlags flags)
 
     mem->data = mmap (0, gmem->maxsize, prot, flags, mem->fd, 0);
     if (mem->data == MAP_FAILED) {
+      GstDebugLevel level;
       mem->data = NULL;
-      GST_ERROR ("%p: fd %d: mmap failed: %s", mem, mem->fd,
-          g_strerror (errno));
+
+      switch (errno) {
+        case EACCES:
+          level = GST_LEVEL_INFO;
+          break;
+        default:
+          level = GST_LEVEL_ERROR;
+          break;
+      }
+
+      GST_CAT_LEVEL_LOG (GST_CAT_DEFAULT, level, NULL,
+          "%p: fd %d: mmap failed: %s", mem, mem->fd, g_strerror (errno));
       goto out;
     }
   }

@@ -126,8 +126,8 @@ timestamp deviates less than the property indicates from what would make a
 Note that the output is still guaranteed to be a perfect stream, which means
 that the incoming data is then simply shifted (by less than the indicated
 tolerance) to a perfect time.</p>
-<div class="refsect2">
-<a name="id-1.2.9.7.7"></a><h3>Example pipelines</h3>
+<div class="refsect3">
+<a name="id-1.2.9.7.7"></a><h4>Example pipelines</h4>
 <div class="informalexample">
   <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
     <tbody>
@@ -138,8 +138,10 @@ tolerance) to a perfect time.</p>
     </tbody>
   </table>
 </div>
+
+<p>
  Capture audio from the sound card and turn it into a perfect stream
-for saving in a raw audio file.
+for saving in a raw audio file.</p>
 <div class="informalexample">
   <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
     <tbody>
@@ -150,10 +152,12 @@ for saving in a raw audio file.
     </tbody>
   </table>
 </div>
+
+<p>
  Decodes an audio file and transforms it into a perfect stream for saving
 in a raw audio WAV file. Without the audio rate, the timing might not be
 preserved correctly in the WAV file in case the decoded stream is jittery
-or there are samples missing.
+or there are samples missing.</p>
 </div>
 <div class="refsynopsisdiv">
 <h2>Synopsis</h2>

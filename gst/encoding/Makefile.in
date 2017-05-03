@@ -171,21 +171,21 @@ am__uninstall_files_from_dir = { \
 am__installdirs = "$(DESTDIR)$(plugindir)"
 LTLIBRARIES = $(plugin_LTLIBRARIES)
 am__DEPENDENCIES_1 =
-libgstencodebin_la_DEPENDENCIES = $(top_builddir)/gst-libs/gst/pbutils/libgstpbutils-@GST_API_VERSION@.la \
+libgstencoding_la_DEPENDENCIES = $(top_builddir)/gst-libs/gst/pbutils/libgstpbutils-@GST_API_VERSION@.la \
 	$(am__DEPENDENCIES_1)
-am_libgstencodebin_la_OBJECTS = libgstencodebin_la-gstencodebin.lo \
-	libgstencodebin_la-gstsmartencoder.lo \
-	libgstencodebin_la-gststreamcombiner.lo \
-	libgstencodebin_la-gststreamsplitter.lo
-libgstencodebin_la_OBJECTS = $(am_libgstencodebin_la_OBJECTS)
+am_libgstencoding_la_OBJECTS = libgstencoding_la-gstencodebin.lo \
+	libgstencoding_la-gstsmartencoder.lo \
+	libgstencoding_la-gststreamcombiner.lo \
+	libgstencoding_la-gststreamsplitter.lo
+libgstencoding_la_OBJECTS = $(am_libgstencoding_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
-libgstencodebin_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
-	$(libgstencodebin_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
-	$(CCLD) $(libgstencodebin_la_CFLAGS) $(CFLAGS) \
-	$(libgstencodebin_la_LDFLAGS) $(LDFLAGS) -o $@
+libgstencoding_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(libgstencoding_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
+	$(CCLD) $(libgstencoding_la_CFLAGS) $(CFLAGS) \
+	$(libgstencoding_la_LDFLAGS) $(LDFLAGS) -o $@
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -220,8 +220,8 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(libgstencodebin_la_SOURCES)
-DIST_SOURCES = $(libgstencodebin_la_SOURCES)
+SOURCES = $(libgstencoding_la_SOURCES)
+DIST_SOURCES = $(libgstencoding_la_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -551,20 +551,20 @@ target_vendor = @target_vendor@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-plugin_LTLIBRARIES = libgstencodebin.la
-libgstencodebin_la_SOURCES = \
+plugin_LTLIBRARIES = libgstencoding.la
+libgstencoding_la_SOURCES = \
 	gstencodebin.c		\
 	gstsmartencoder.c	\
 	gststreamcombiner.c	\
 	gststreamsplitter.c
 
-libgstencodebin_la_CFLAGS = $(GST_PLUGINS_BASE_CFLAGS) $(GST_CFLAGS)
-libgstencodebin_la_LDFLAGS = $(GST_PLUGIN_LDFLAGS)
-libgstencodebin_la_LIBADD = \
+libgstencoding_la_CFLAGS = $(GST_PLUGINS_BASE_CFLAGS) $(GST_CFLAGS)
+libgstencoding_la_LDFLAGS = $(GST_PLUGIN_LDFLAGS)
+libgstencoding_la_LIBADD = \
 	$(top_builddir)/gst-libs/gst/pbutils/libgstpbutils-@GST_API_VERSION@.la \
 	$(GST_LIBS)
 
-libgstencodebin_la_LIBTOOLFLAGS = $(GST_PLUGIN_LIBTOOLFLAGS)
+libgstencoding_la_LIBTOOLFLAGS = $(GST_PLUGIN_LIBTOOLFLAGS)
 noinst_HEADERS = \
 	gstencodebin.h		\
 	gststreamcombiner.h	\
@@ -643,8 +643,8 @@ clean-pluginLTLIBRARIES:
 	  rm -f $${locs}; \
 	}
 
-libgstencodebin.la: $(libgstencodebin_la_OBJECTS) $(libgstencodebin_la_DEPENDENCIES) $(EXTRA_libgstencodebin_la_DEPENDENCIES) 
-	$(AM_V_CCLD)$(libgstencodebin_la_LINK) -rpath $(plugindir) $(libgstencodebin_la_OBJECTS) $(libgstencodebin_la_LIBADD) $(LIBS)
+libgstencoding.la: $(libgstencoding_la_OBJECTS) $(libgstencoding_la_DEPENDENCIES) $(EXTRA_libgstencoding_la_DEPENDENCIES) 
+	$(AM_V_CCLD)$(libgstencoding_la_LINK) -rpath $(plugindir) $(libgstencoding_la_OBJECTS) $(libgstencoding_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -652,10 +652,10 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgstencodebin_la-gstencodebin.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgstencodebin_la-gstsmartencoder.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgstencodebin_la-gststreamcombiner.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgstencodebin_la-gststreamsplitter.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgstencoding_la-gstencodebin.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgstencoding_la-gstsmartencoder.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgstencoding_la-gststreamcombiner.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgstencoding_la-gststreamsplitter.Plo@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
@@ -681,33 +681,33 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LTCOMPILE) -c -o $@ $<
 
-libgstencodebin_la-gstencodebin.lo: gstencodebin.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(libgstencodebin_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgstencodebin_la_CFLAGS) $(CFLAGS) -MT libgstencodebin_la-gstencodebin.lo -MD -MP -MF $(DEPDIR)/libgstencodebin_la-gstencodebin.Tpo -c -o libgstencodebin_la-gstencodebin.lo `test -f 'gstencodebin.c' || echo '$(srcdir)/'`gstencodebin.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgstencodebin_la-gstencodebin.Tpo $(DEPDIR)/libgstencodebin_la-gstencodebin.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gstencodebin.c' object='libgstencodebin_la-gstencodebin.lo' libtool=yes @AMDEPBACKSLASH@
+libgstencoding_la-gstencodebin.lo: gstencodebin.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(libgstencoding_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgstencoding_la_CFLAGS) $(CFLAGS) -MT libgstencoding_la-gstencodebin.lo -MD -MP -MF $(DEPDIR)/libgstencoding_la-gstencodebin.Tpo -c -o libgstencoding_la-gstencodebin.lo `test -f 'gstencodebin.c' || echo '$(srcdir)/'`gstencodebin.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgstencoding_la-gstencodebin.Tpo $(DEPDIR)/libgstencoding_la-gstencodebin.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gstencodebin.c' object='libgstencoding_la-gstencodebin.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(libgstencodebin_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgstencodebin_la_CFLAGS) $(CFLAGS) -c -o libgstencodebin_la-gstencodebin.lo `test -f 'gstencodebin.c' || echo '$(srcdir)/'`gstencodebin.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(libgstencoding_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgstencoding_la_CFLAGS) $(CFLAGS) -c -o libgstencoding_la-gstencodebin.lo `test -f 'gstencodebin.c' || echo '$(srcdir)/'`gstencodebin.c
 
-libgstencodebin_la-gstsmartencoder.lo: gstsmartencoder.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(libgstencodebin_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgstencodebin_la_CFLAGS) $(CFLAGS) -MT libgstencodebin_la-gstsmartencoder.lo -MD -MP -MF $(DEPDIR)/libgstencodebin_la-gstsmartencoder.Tpo -c -o libgstencodebin_la-gstsmartencoder.lo `test -f 'gstsmartencoder.c' || echo '$(srcdir)/'`gstsmartencoder.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgstencodebin_la-gstsmartencoder.Tpo $(DEPDIR)/libgstencodebin_la-gstsmartencoder.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gstsmartencoder.c' object='libgstencodebin_la-gstsmartencoder.lo' libtool=yes @AMDEPBACKSLASH@
+libgstencoding_la-gstsmartencoder.lo: gstsmartencoder.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(libgstencoding_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgstencoding_la_CFLAGS) $(CFLAGS) -MT libgstencoding_la-gstsmartencoder.lo -MD -MP -MF $(DEPDIR)/libgstencoding_la-gstsmartencoder.Tpo -c -o libgstencoding_la-gstsmartencoder.lo `test -f 'gstsmartencoder.c' || echo '$(srcdir)/'`gstsmartencoder.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgstencoding_la-gstsmartencoder.Tpo $(DEPDIR)/libgstencoding_la-gstsmartencoder.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gstsmartencoder.c' object='libgstencoding_la-gstsmartencoder.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(libgstencodebin_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgstencodebin_la_CFLAGS) $(CFLAGS) -c -o libgstencodebin_la-gstsmartencoder.lo `test -f 'gstsmartencoder.c' || echo '$(srcdir)/'`gstsmartencoder.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(libgstencoding_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgstencoding_la_CFLAGS) $(CFLAGS) -c -o libgstencoding_la-gstsmartencoder.lo `test -f 'gstsmartencoder.c' || echo '$(srcdir)/'`gstsmartencoder.c
 
-libgstencodebin_la-gststreamcombiner.lo: gststreamcombiner.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(libgstencodebin_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgstencodebin_la_CFLAGS) $(CFLAGS) -MT libgstencodebin_la-gststreamcombiner.lo -MD -MP -MF $(DEPDIR)/libgstencodebin_la-gststreamcombiner.Tpo -c -o libgstencodebin_la-gststreamcombiner.lo `test -f 'gststreamcombiner.c' || echo '$(srcdir)/'`gststreamcombiner.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgstencodebin_la-gststreamcombiner.Tpo $(DEPDIR)/libgstencodebin_la-gststreamcombiner.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gststreamcombiner.c' object='libgstencodebin_la-gststreamcombiner.lo' libtool=yes @AMDEPBACKSLASH@
+libgstencoding_la-gststreamcombiner.lo: gststreamcombiner.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(libgstencoding_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgstencoding_la_CFLAGS) $(CFLAGS) -MT libgstencoding_la-gststreamcombiner.lo -MD -MP -MF $(DEPDIR)/libgstencoding_la-gststreamcombiner.Tpo -c -o libgstencoding_la-gststreamcombiner.lo `test -f 'gststreamcombiner.c' || echo '$(srcdir)/'`gststreamcombiner.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgstencoding_la-gststreamcombiner.Tpo $(DEPDIR)/libgstencoding_la-gststreamcombiner.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gststreamcombiner.c' object='libgstencoding_la-gststreamcombiner.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(libgstencodebin_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgstencodebin_la_CFLAGS) $(CFLAGS) -c -o libgstencodebin_la-gststreamcombiner.lo `test -f 'gststreamcombiner.c' || echo '$(srcdir)/'`gststreamcombiner.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(libgstencoding_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgstencoding_la_CFLAGS) $(CFLAGS) -c -o libgstencoding_la-gststreamcombiner.lo `test -f 'gststreamcombiner.c' || echo '$(srcdir)/'`gststreamcombiner.c
 
-libgstencodebin_la-gststreamsplitter.lo: gststreamsplitter.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(libgstencodebin_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgstencodebin_la_CFLAGS) $(CFLAGS) -MT libgstencodebin_la-gststreamsplitter.lo -MD -MP -MF $(DEPDIR)/libgstencodebin_la-gststreamsplitter.Tpo -c -o libgstencodebin_la-gststreamsplitter.lo `test -f 'gststreamsplitter.c' || echo '$(srcdir)/'`gststreamsplitter.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgstencodebin_la-gststreamsplitter.Tpo $(DEPDIR)/libgstencodebin_la-gststreamsplitter.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gststreamsplitter.c' object='libgstencodebin_la-gststreamsplitter.lo' libtool=yes @AMDEPBACKSLASH@
+libgstencoding_la-gststreamsplitter.lo: gststreamsplitter.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(libgstencoding_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgstencoding_la_CFLAGS) $(CFLAGS) -MT libgstencoding_la-gststreamsplitter.lo -MD -MP -MF $(DEPDIR)/libgstencoding_la-gststreamsplitter.Tpo -c -o libgstencoding_la-gststreamsplitter.lo `test -f 'gststreamsplitter.c' || echo '$(srcdir)/'`gststreamsplitter.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgstencoding_la-gststreamsplitter.Tpo $(DEPDIR)/libgstencoding_la-gststreamsplitter.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gststreamsplitter.c' object='libgstencoding_la-gststreamsplitter.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(libgstencodebin_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgstencodebin_la_CFLAGS) $(CFLAGS) -c -o libgstencodebin_la-gststreamsplitter.lo `test -f 'gststreamsplitter.c' || echo '$(srcdir)/'`gststreamsplitter.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(libgstencoding_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgstencoding_la_CFLAGS) $(CFLAGS) -c -o libgstencoding_la-gststreamsplitter.lo `test -f 'gststreamsplitter.c' || echo '$(srcdir)/'`gststreamsplitter.c
 
 mostlyclean-libtool:
 	-rm -f *.lo

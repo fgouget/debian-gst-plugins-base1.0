@@ -6,7 +6,7 @@
 <meta name="generator" content="DocBook XSL Stylesheets V1.79.1">
 <link rel="home" href="index.html" title="GStreamer Base Plugins 1.0 Library Reference Manual">
 <link rel="up" href="gstreamer-video.html" title="Video Library">
-<link rel="prev" href="gst-plugins-base-libs-gstvideo.html" title="gstvideo">
+<link rel="prev" href="gst-plugins-base-libs-GstVideoAlignment.html" title="GstVideoAlignment">
 <link rel="next" href="gst-plugins-base-libs-gstvideoaffinetransformationmeta.html" title="gstvideoaffinetransformationmeta">
 <meta name="generator" content="GTK-Doc V1.25 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
@@ -19,7 +19,7 @@
 </td>
 <td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
 <td><a accesskey="u" href="gstreamer-video.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
-<td><a accesskey="p" href="gst-plugins-base-libs-gstvideo.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="p" href="gst-plugins-base-libs-GstVideoAlignment.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
 <td><a accesskey="n" href="gst-plugins-base-libs-gstvideoaffinetransformationmeta.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
 </tr></table>
 <div class="refentry">
@@ -220,6 +220,14 @@
 <td class="function_name"><a class="link" href="gst-plugins-base-libs-gstvideometa.html#GST-BUFFER-POOL-OPTION-VIDEO-GL-TEXTURE-UPLOAD-META:CAPS" title="GST_BUFFER_POOL_OPTION_VIDEO_GL_TEXTURE_UPLOAD_META">GST_BUFFER_POOL_OPTION_VIDEO_GL_TEXTURE_UPLOAD_META</a></td>
 </tr>
 <tr>
+<td class="datatype_keyword">enum</td>
+<td class="function_name"><a class="link" href="gst-plugins-base-libs-gstvideometa.html#GstVideoGLTextureOrientation" title="enum GstVideoGLTextureOrientation">GstVideoGLTextureOrientation</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">enum</td>
+<td class="function_name"><a class="link" href="gst-plugins-base-libs-gstvideometa.html#GstVideoGLTextureType" title="enum GstVideoGLTextureType">GstVideoGLTextureType</a></td>
+</tr>
+<tr>
 <td class="datatype_keyword">struct</td>
 <td class="function_name"><a class="link" href="gst-plugins-base-libs-gstvideometa.html#GstVideoGLTextureUploadMeta" title="struct GstVideoGLTextureUploadMeta">GstVideoGLTextureUploadMeta</a></td>
 </tr>
@@ -354,8 +362,8 @@ gst_video_meta_get_info (<em class="parameter"><code><span class="type">void</sp
 <a name="gst-buffer-add-video-meta"></a><h3>gst_buffer_add_video_meta ()</h3>
 <pre class="programlisting"><a class="link" href="gst-plugins-base-libs-gstvideometa.html#GstVideoMeta" title="struct GstVideoMeta"><span class="returnvalue">GstVideoMeta</span></a> *
 gst_buffer_add_video_meta (<em class="parameter"><code><a href="/usr/share/gtk-doc/html/gstreamer-1.0GstBuffer.html#GstBuffer-struct"><span class="type">GstBuffer</span></a> *buffer</code></em>,
-                           <em class="parameter"><code><a class="link" href="gst-plugins-base-libs-gstvideo.html#GstVideoFrameFlags" title="enum GstVideoFrameFlags"><span class="type">GstVideoFrameFlags</span></a> flags</code></em>,
-                           <em class="parameter"><code><a class="link" href="gst-plugins-base-libs-gstvideo.html#GstVideoFormat" title="enum GstVideoFormat"><span class="type">GstVideoFormat</span></a> format</code></em>,
+                           <em class="parameter"><code><a class="link" href="gst-plugins-base-libs-GstVideoAlignment.html#GstVideoFrameFlags" title="enum GstVideoFrameFlags"><span class="type">GstVideoFrameFlags</span></a> flags</code></em>,
+                           <em class="parameter"><code><a class="link" href="gst-plugins-base-libs-GstVideoAlignment.html#GstVideoFormat" title="enum GstVideoFormat"><span class="type">GstVideoFormat</span></a> format</code></em>,
                            <em class="parameter"><code><a href="/usr/share/gtk-doc/html/glibglib-Basic-Types.html#guint"><span class="type">guint</span></a> width</code></em>,
                            <em class="parameter"><code><a href="/usr/share/gtk-doc/html/glibglib-Basic-Types.html#guint"><span class="type">guint</span></a> height</code></em>);</pre>
 <p>Attaches GstVideoMeta metadata to <em class="parameter"><code>buffer</code></em>
@@ -382,12 +390,12 @@ default offsets and strides for <em class="parameter"><code>format</code></em>
 </tr>
 <tr>
 <td class="parameter_name"><p>flags</p></td>
-<td class="parameter_description"><p><a class="link" href="gst-plugins-base-libs-gstvideo.html#GstVideoFrameFlags" title="enum GstVideoFrameFlags"><span class="type">GstVideoFrameFlags</span></a></p></td>
+<td class="parameter_description"><p><a class="link" href="gst-plugins-base-libs-GstVideoAlignment.html#GstVideoFrameFlags" title="enum GstVideoFrameFlags"><span class="type">GstVideoFrameFlags</span></a></p></td>
 <td class="parameter_annotations"> </td>
 </tr>
 <tr>
 <td class="parameter_name"><p>format</p></td>
-<td class="parameter_description"><p>a <a class="link" href="gst-plugins-base-libs-gstvideo.html#GstVideoFormat" title="enum GstVideoFormat"><span class="type">GstVideoFormat</span></a></p></td>
+<td class="parameter_description"><p>a <a class="link" href="gst-plugins-base-libs-GstVideoAlignment.html#GstVideoFormat" title="enum GstVideoFormat"><span class="type">GstVideoFormat</span></a></p></td>
 <td class="parameter_annotations"> </td>
 </tr>
 <tr>
@@ -415,8 +423,8 @@ default offsets and strides for <em class="parameter"><code>format</code></em>
 <a name="gst-buffer-add-video-meta-full"></a><h3>gst_buffer_add_video_meta_full ()</h3>
 <pre class="programlisting"><a class="link" href="gst-plugins-base-libs-gstvideometa.html#GstVideoMeta" title="struct GstVideoMeta"><span class="returnvalue">GstVideoMeta</span></a> *
 gst_buffer_add_video_meta_full (<em class="parameter"><code><a href="/usr/share/gtk-doc/html/gstreamer-1.0GstBuffer.html#GstBuffer-struct"><span class="type">GstBuffer</span></a> *buffer</code></em>,
-                                <em class="parameter"><code><a class="link" href="gst-plugins-base-libs-gstvideo.html#GstVideoFrameFlags" title="enum GstVideoFrameFlags"><span class="type">GstVideoFrameFlags</span></a> flags</code></em>,
-                                <em class="parameter"><code><a class="link" href="gst-plugins-base-libs-gstvideo.html#GstVideoFormat" title="enum GstVideoFormat"><span class="type">GstVideoFormat</span></a> format</code></em>,
+                                <em class="parameter"><code><a class="link" href="gst-plugins-base-libs-GstVideoAlignment.html#GstVideoFrameFlags" title="enum GstVideoFrameFlags"><span class="type">GstVideoFrameFlags</span></a> flags</code></em>,
+                                <em class="parameter"><code><a class="link" href="gst-plugins-base-libs-GstVideoAlignment.html#GstVideoFormat" title="enum GstVideoFormat"><span class="type">GstVideoFormat</span></a> format</code></em>,
                                 <em class="parameter"><code><a href="/usr/share/gtk-doc/html/glibglib-Basic-Types.html#guint"><span class="type">guint</span></a> width</code></em>,
                                 <em class="parameter"><code><a href="/usr/share/gtk-doc/html/glibglib-Basic-Types.html#guint"><span class="type">guint</span></a> height</code></em>,
                                 <em class="parameter"><code><a href="/usr/share/gtk-doc/html/glibglib-Basic-Types.html#guint"><span class="type">guint</span></a> n_planes</code></em>,
@@ -440,12 +448,12 @@ gst_buffer_add_video_meta_full (<em class="parameter"><code><a href="/usr/share/
 </tr>
 <tr>
 <td class="parameter_name"><p>flags</p></td>
-<td class="parameter_description"><p><a class="link" href="gst-plugins-base-libs-gstvideo.html#GstVideoFrameFlags" title="enum GstVideoFrameFlags"><span class="type">GstVideoFrameFlags</span></a></p></td>
+<td class="parameter_description"><p><a class="link" href="gst-plugins-base-libs-GstVideoAlignment.html#GstVideoFrameFlags" title="enum GstVideoFrameFlags"><span class="type">GstVideoFrameFlags</span></a></p></td>
 <td class="parameter_annotations"> </td>
 </tr>
 <tr>
 <td class="parameter_name"><p>format</p></td>
-<td class="parameter_description"><p>a <a class="link" href="gst-plugins-base-libs-gstvideo.html#GstVideoFormat" title="enum GstVideoFormat"><span class="type">GstVideoFormat</span></a></p></td>
+<td class="parameter_description"><p>a <a class="link" href="gst-plugins-base-libs-GstVideoAlignment.html#GstVideoFormat" title="enum GstVideoFormat"><span class="type">GstVideoFormat</span></a></p></td>
 <td class="parameter_annotations"> </td>
 </tr>
 <tr>
@@ -757,9 +765,9 @@ no such metadata on <em class="parameter"><code>buffer</code></em>
 <pre class="programlisting"><a class="link" href="gst-plugins-base-libs-gstvideometa.html#GstVideoGLTextureUploadMeta" title="struct GstVideoGLTextureUploadMeta"><span class="returnvalue">GstVideoGLTextureUploadMeta</span></a> *
 gst_buffer_add_video_gl_texture_upload_meta
                                (<em class="parameter"><code><a href="/usr/share/gtk-doc/html/gstreamer-1.0GstBuffer.html#GstBuffer-struct"><span class="type">GstBuffer</span></a> *buffer</code></em>,
-                                <em class="parameter"><code><span class="type">GstVideoGLTextureOrientation</span> texture_orientation</code></em>,
+                                <em class="parameter"><code><a class="link" href="gst-plugins-base-libs-gstvideometa.html#GstVideoGLTextureOrientation" title="enum GstVideoGLTextureOrientation"><span class="type">GstVideoGLTextureOrientation</span></a> texture_orientation</code></em>,
                                 <em class="parameter"><code><a href="/usr/share/gtk-doc/html/glibglib-Basic-Types.html#guint"><span class="type">guint</span></a> n_textures</code></em>,
-                                <em class="parameter"><code><span class="type">GstVideoGLTextureType</span> texture_type[4]</code></em>,
+                                <em class="parameter"><code><a class="link" href="gst-plugins-base-libs-gstvideometa.html#GstVideoGLTextureType" title="enum GstVideoGLTextureType"><span class="type">GstVideoGLTextureType</span></a> texture_type[4]</code></em>,
                                 <em class="parameter"><code><a class="link" href="gst-plugins-base-libs-gstvideometa.html#GstVideoGLTextureUpload" title="GstVideoGLTextureUpload ()"><span class="type">GstVideoGLTextureUpload</span></a> upload</code></em>,
                                 <em class="parameter"><code><a href="/usr/share/gtk-doc/html/glibglib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>,
                                 <em class="parameter"><code><a href="/usr/share/gtk-doc/html/gobjectgobject-Boxed-Types.html#GBoxedCopyFunc"><span class="type">GBoxedCopyFunc</span></a> user_data_copy</code></em>,
@@ -783,7 +791,7 @@ parameters.</p>
 </tr>
 <tr>
 <td class="parameter_name"><p>texture_orientation</p></td>
-<td class="parameter_description"><p>the <span class="type">GstVideoGLTextureOrientation</span></p></td>
+<td class="parameter_description"><p>the <a class="link" href="gst-plugins-base-libs-gstvideometa.html#GstVideoGLTextureOrientation" title="enum GstVideoGLTextureOrientation"><span class="type">GstVideoGLTextureOrientation</span></a></p></td>
 <td class="parameter_annotations"> </td>
 </tr>
 <tr>
@@ -793,7 +801,7 @@ parameters.</p>
 </tr>
 <tr>
 <td class="parameter_name"><p>texture_type</p></td>
-<td class="parameter_description"><p>array of <span class="type">GstVideoGLTextureType</span></p></td>
+<td class="parameter_description"><p>array of <a class="link" href="gst-plugins-base-libs-gstvideometa.html#GstVideoGLTextureType" title="enum GstVideoGLTextureType"><span class="type">GstVideoGLTextureType</span></a></p></td>
 <td class="parameter_annotations"> </td>
 </tr>
 <tr>
@@ -875,7 +883,7 @@ gst_video_gl_texture_upload_meta_upload
 <a name="gst-buffer-add-video-time-code-meta"></a><h3>gst_buffer_add_video_time_code_meta ()</h3>
 <pre class="programlisting"><a class="link" href="gst-plugins-base-libs-gstvideometa.html#GstVideoTimeCodeMeta" title="GstVideoTimeCodeMeta"><span class="returnvalue">GstVideoTimeCodeMeta</span></a> *
 gst_buffer_add_video_time_code_meta (<em class="parameter"><code><a href="/usr/share/gtk-doc/html/gstreamer-1.0GstBuffer.html#GstBuffer-struct"><span class="type">GstBuffer</span></a> *buffer</code></em>,
-                                     <em class="parameter"><code><a class="link" href="gst-plugins-base-libs-gstvideo.html#GstVideoTimeCode" title="struct GstVideoTimeCode"><span class="type">GstVideoTimeCode</span></a> *tc</code></em>);</pre>
+                                     <em class="parameter"><code><a class="link" href="gst-plugins-base-libs-GstVideoAlignment.html#GstVideoTimeCode" title="struct GstVideoTimeCode"><span class="type">GstVideoTimeCode</span></a> *tc</code></em>);</pre>
 <p>Attaches <a class="link" href="gst-plugins-base-libs-gstvideometa.html#GstVideoTimeCodeMeta" title="GstVideoTimeCodeMeta"><span class="type">GstVideoTimeCodeMeta</span></a> metadata to <em class="parameter"><code>buffer</code></em>
  with the given
 parameters.</p>
@@ -895,7 +903,7 @@ parameters.</p>
 </tr>
 <tr>
 <td class="parameter_name"><p>tc</p></td>
-<td class="parameter_description"><p>a <a class="link" href="gst-plugins-base-libs-gstvideo.html#GstVideoTimeCode" title="struct GstVideoTimeCode"><span class="type">GstVideoTimeCode</span></a></p></td>
+<td class="parameter_description"><p>a <a class="link" href="gst-plugins-base-libs-GstVideoAlignment.html#GstVideoTimeCode" title="struct GstVideoTimeCode"><span class="type">GstVideoTimeCode</span></a></p></td>
 <td class="parameter_annotations"> </td>
 </tr>
 </tbody>
@@ -918,7 +926,7 @@ gst_buffer_add_video_time_code_meta_full
                                 <em class="parameter"><code><a href="/usr/share/gtk-doc/html/glibglib-Basic-Types.html#guint"><span class="type">guint</span></a> fps_n</code></em>,
                                 <em class="parameter"><code><a href="/usr/share/gtk-doc/html/glibglib-Basic-Types.html#guint"><span class="type">guint</span></a> fps_d</code></em>,
                                 <em class="parameter"><code><a href="/usr/share/gtk-doc/html/glibglib-GDateTime.html#GDateTime"><span class="type">GDateTime</span></a> *latest_daily_jam</code></em>,
-                                <em class="parameter"><code><a class="link" href="gst-plugins-base-libs-gstvideo.html#GstVideoTimeCodeFlags" title="enum GstVideoTimeCodeFlags"><span class="type">GstVideoTimeCodeFlags</span></a> flags</code></em>,
+                                <em class="parameter"><code><a class="link" href="gst-plugins-base-libs-GstVideoAlignment.html#GstVideoTimeCodeFlags" title="enum GstVideoTimeCodeFlags"><span class="type">GstVideoTimeCodeFlags</span></a> flags</code></em>,
                                 <em class="parameter"><code><a href="/usr/share/gtk-doc/html/glibglib-Basic-Types.html#guint"><span class="type">guint</span></a> hours</code></em>,
                                 <em class="parameter"><code><a href="/usr/share/gtk-doc/html/glibglib-Basic-Types.html#guint"><span class="type">guint</span></a> minutes</code></em>,
                                 <em class="parameter"><code><a href="/usr/share/gtk-doc/html/glibglib-Basic-Types.html#guint"><span class="type">guint</span></a> seconds</code></em>,
@@ -958,7 +966,7 @@ parameters.</p>
 </tr>
 <tr>
 <td class="parameter_name"><p>flags</p></td>
-<td class="parameter_description"><p>a <a class="link" href="gst-plugins-base-libs-gstvideo.html#GstVideoTimeCodeFlags" title="enum GstVideoTimeCodeFlags"><span class="type">GstVideoTimeCodeFlags</span></a></p></td>
+<td class="parameter_description"><p>a <a class="link" href="gst-plugins-base-libs-GstVideoAlignment.html#GstVideoTimeCodeFlags" title="enum GstVideoTimeCodeFlags"><span class="type">GstVideoTimeCodeFlags</span></a></p></td>
 <td class="parameter_annotations"> </td>
 </tr>
 <tr>
@@ -1048,12 +1056,12 @@ parameters.</p>
 <td class="struct_member_annotations"> </td>
 </tr>
 <tr>
-<td class="struct_member_name"><p><a class="link" href="gst-plugins-base-libs-gstvideo.html#GstVideoFrameFlags" title="enum GstVideoFrameFlags"><span class="type">GstVideoFrameFlags</span></a> <em class="structfield"><code><a name="GstVideoMeta.flags"></a>flags</code></em>;</p></td>
+<td class="struct_member_name"><p><a class="link" href="gst-plugins-base-libs-GstVideoAlignment.html#GstVideoFrameFlags" title="enum GstVideoFrameFlags"><span class="type">GstVideoFrameFlags</span></a> <em class="structfield"><code><a name="GstVideoMeta.flags"></a>flags</code></em>;</p></td>
 <td class="struct_member_description"><p>additional video flags</p></td>
 <td class="struct_member_annotations"> </td>
 </tr>
 <tr>
-<td class="struct_member_name"><p><a class="link" href="gst-plugins-base-libs-gstvideo.html#GstVideoFormat" title="enum GstVideoFormat"><span class="type">GstVideoFormat</span></a> <em class="structfield"><code><a name="GstVideoMeta.format"></a>format</code></em>;</p></td>
+<td class="struct_member_name"><p><a class="link" href="gst-plugins-base-libs-GstVideoAlignment.html#GstVideoFormat" title="enum GstVideoFormat"><span class="type">GstVideoFormat</span></a> <em class="structfield"><code><a name="GstVideoMeta.format"></a>format</code></em>;</p></td>
 <td class="struct_member_description"><p>the video format</p></td>
 <td class="struct_member_annotations"> </td>
 </tr>
@@ -1125,13 +1133,13 @@ valid, it is used by the default implementation of <em class="parameter"><code>m
 </colgroup>
 <tbody>
 <tr>
-<td class="struct_member_name"><p><a class="link" href="gst-plugins-base-libs-gstvideo.html#GstVideoInfo" title="struct GstVideoInfo"><span class="type">GstVideoInfo</span></a> *<em class="structfield"><code><a name="GstVideoMetaTransform.in-info"></a>in_info</code></em>;</p></td>
-<td class="struct_member_description"><p>the input <a class="link" href="gst-plugins-base-libs-gstvideo.html#GstVideoInfo" title="struct GstVideoInfo"><span class="type">GstVideoInfo</span></a></p></td>
+<td class="struct_member_name"><p><a class="link" href="gst-plugins-base-libs-GstVideoAlignment.html#GstVideoInfo" title="struct GstVideoInfo"><span class="type">GstVideoInfo</span></a> *<em class="structfield"><code><a name="GstVideoMetaTransform.in-info"></a>in_info</code></em>;</p></td>
+<td class="struct_member_description"><p>the input <a class="link" href="gst-plugins-base-libs-GstVideoAlignment.html#GstVideoInfo" title="struct GstVideoInfo"><span class="type">GstVideoInfo</span></a></p></td>
 <td class="struct_member_annotations"> </td>
 </tr>
 <tr>
-<td class="struct_member_name"><p><a class="link" href="gst-plugins-base-libs-gstvideo.html#GstVideoInfo" title="struct GstVideoInfo"><span class="type">GstVideoInfo</span></a> *<em class="structfield"><code><a name="GstVideoMetaTransform.out-info"></a>out_info</code></em>;</p></td>
-<td class="struct_member_description"><p>the output <a class="link" href="gst-plugins-base-libs-gstvideo.html#GstVideoInfo" title="struct GstVideoInfo"><span class="type">GstVideoInfo</span></a></p></td>
+<td class="struct_member_name"><p><a class="link" href="gst-plugins-base-libs-GstVideoAlignment.html#GstVideoInfo" title="struct GstVideoInfo"><span class="type">GstVideoInfo</span></a> *<em class="structfield"><code><a name="GstVideoMetaTransform.out-info"></a>out_info</code></em>;</p></td>
+<td class="struct_member_description"><p>the output <a class="link" href="gst-plugins-base-libs-GstVideoAlignment.html#GstVideoInfo" title="struct GstVideoInfo"><span class="type">GstVideoInfo</span></a></p></td>
 <td class="struct_member_annotations"> </td>
 </tr>
 </tbody>
@@ -1273,6 +1281,117 @@ meta on buffers from the pool.</p>
 </div>
 <hr>
 <div class="refsect2">
+<a name="GstVideoGLTextureOrientation"></a><h3>enum GstVideoGLTextureOrientation</h3>
+<p>The orientation of the GL texture.</p>
+<div class="refsect3">
+<a name="GstVideoGLTextureOrientation.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="enum_members_name">
+<col class="enum_members_description">
+<col width="200px" class="enum_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="enum_member_name"><p><a name="GST-VIDEO-GL-TEXTURE-ORIENTATION-X-NORMAL-Y-NORMAL:CAPS"></a>GST_VIDEO_GL_TEXTURE_ORIENTATION_X_NORMAL_Y_NORMAL</p></td>
+<td class="enum_member_description">
+<p>Top line first in memory, left row first</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="GST-VIDEO-GL-TEXTURE-ORIENTATION-X-NORMAL-Y-FLIP:CAPS"></a>GST_VIDEO_GL_TEXTURE_ORIENTATION_X_NORMAL_Y_FLIP</p></td>
+<td class="enum_member_description">
+<p>Bottom line first in memory, left row first</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="GST-VIDEO-GL-TEXTURE-ORIENTATION-X-FLIP-Y-NORMAL:CAPS"></a>GST_VIDEO_GL_TEXTURE_ORIENTATION_X_FLIP_Y_NORMAL</p></td>
+<td class="enum_member_description">
+<p>Top line first in memory, right row first</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="GST-VIDEO-GL-TEXTURE-ORIENTATION-X-FLIP-Y-FLIP:CAPS"></a>GST_VIDEO_GL_TEXTURE_ORIENTATION_X_FLIP_Y_FLIP</p></td>
+<td class="enum_member_description">
+<p>Bottom line first in memory, right row first</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GstVideoGLTextureType"></a><h3>enum GstVideoGLTextureType</h3>
+<p>The GL texture type.</p>
+<div class="refsect3">
+<a name="GstVideoGLTextureType.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="enum_members_name">
+<col class="enum_members_description">
+<col width="200px" class="enum_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="enum_member_name"><p><a name="GST-VIDEO-GL-TEXTURE-TYPE-LUMINANCE:CAPS"></a>GST_VIDEO_GL_TEXTURE_TYPE_LUMINANCE</p></td>
+<td class="enum_member_description">
+<p>Luminance texture, GL_LUMINANCE</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="GST-VIDEO-GL-TEXTURE-TYPE-LUMINANCE-ALPHA:CAPS"></a>GST_VIDEO_GL_TEXTURE_TYPE_LUMINANCE_ALPHA</p></td>
+<td class="enum_member_description">
+<p>Luminance-alpha texture, GL_LUMINANCE_ALPHA</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="GST-VIDEO-GL-TEXTURE-TYPE-RGB16:CAPS"></a>GST_VIDEO_GL_TEXTURE_TYPE_RGB16</p></td>
+<td class="enum_member_description">
+<p>RGB 565 texture, GL_RGB</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="GST-VIDEO-GL-TEXTURE-TYPE-RGB:CAPS"></a>GST_VIDEO_GL_TEXTURE_TYPE_RGB</p></td>
+<td class="enum_member_description">
+<p>RGB texture, GL_RGB</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="GST-VIDEO-GL-TEXTURE-TYPE-RGBA:CAPS"></a>GST_VIDEO_GL_TEXTURE_TYPE_RGBA</p></td>
+<td class="enum_member_description">
+<p>RGBA texture, GL_RGBA</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="GST-VIDEO-GL-TEXTURE-TYPE-R:CAPS"></a>GST_VIDEO_GL_TEXTURE_TYPE_R</p></td>
+<td class="enum_member_description">
+<p>R texture, GL_RED_EXT</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="GST-VIDEO-GL-TEXTURE-TYPE-RG:CAPS"></a>GST_VIDEO_GL_TEXTURE_TYPE_RG</p></td>
+<td class="enum_member_description">
+<p>RG texture, GL_RG_EXT</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
 <a name="GstVideoGLTextureUploadMeta"></a><h3>struct GstVideoGLTextureUploadMeta</h3>
 <pre class="programlisting">struct GstVideoGLTextureUploadMeta {
   GstMeta       meta;
@@ -1301,7 +1420,7 @@ to upload something to an OpenGL texture.</p>
 <td class="struct_member_annotations"> </td>
 </tr>
 <tr>
-<td class="struct_member_name"><p><span class="type">GstVideoGLTextureOrientation</span> <em class="structfield"><code><a name="GstVideoGLTextureUploadMeta.texture-orientation"></a>texture_orientation</code></em>;</p></td>
+<td class="struct_member_name"><p><a class="link" href="gst-plugins-base-libs-gstvideometa.html#GstVideoGLTextureOrientation" title="enum GstVideoGLTextureOrientation"><span class="type">GstVideoGLTextureOrientation</span></a> <em class="structfield"><code><a name="GstVideoGLTextureUploadMeta.texture-orientation"></a>texture_orientation</code></em>;</p></td>
 <td class="struct_member_description"><p>Orientation of the textures</p></td>
 <td class="struct_member_annotations"> </td>
 </tr>
@@ -1311,7 +1430,7 @@ to upload something to an OpenGL texture.</p>
 <td class="struct_member_annotations"> </td>
 </tr>
 <tr>
-<td class="struct_member_name"><p><span class="type">GstVideoGLTextureType</span> <em class="structfield"><code><a name="GstVideoGLTextureUploadMeta.texture-type"></a>texture_type</code></em>[4];</p></td>
+<td class="struct_member_name"><p><a class="link" href="gst-plugins-base-libs-gstvideometa.html#GstVideoGLTextureType" title="enum GstVideoGLTextureType"><span class="type">GstVideoGLTextureType</span></a> <em class="structfield"><code><a name="GstVideoGLTextureUploadMeta.texture-type"></a>texture_type</code></em>[4];</p></td>
 <td class="struct_member_description"><p>Type of each texture</p></td>
 <td class="struct_member_annotations"> </td>
 </tr>
@@ -1346,7 +1465,7 @@ automatically incremented/interpolated.</p>
 <td class="struct_member_annotations"> </td>
 </tr>
 <tr>
-<td class="struct_member_name"><p><a class="link" href="gst-plugins-base-libs-gstvideo.html#GstVideoTimeCode" title="struct GstVideoTimeCode"><span class="type">GstVideoTimeCode</span></a> <em class="structfield"><code><a name="GstVideoTimeCodeMeta.tc"></a>tc</code></em>;</p></td>
+<td class="struct_member_name"><p><a class="link" href="gst-plugins-base-libs-GstVideoAlignment.html#GstVideoTimeCode" title="struct GstVideoTimeCode"><span class="type">GstVideoTimeCode</span></a> <em class="structfield"><code><a name="GstVideoTimeCodeMeta.tc"></a>tc</code></em>;</p></td>
 <td class="struct_member_description"><p>the GstVideoTimeCode to attach</p></td>
 <td class="struct_member_annotations"> </td>
 </tr>

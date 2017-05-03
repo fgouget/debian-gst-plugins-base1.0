@@ -22,6 +22,7 @@
  */
 /**
  * SECTION:element-adder
+ * @title: adder
  *
  * The adder allows to mix several streams into one by adding the data.
  * Mixed data is clamped to the min/max values of the data format.
@@ -33,12 +34,12 @@
  * audio mixing element: It will sync input streams correctly and also handle
  * live inputs properly.
  *
- * <refsect2>
- * <title>Example launch line</title>
+ * ## Example launch line
  * |[
  * gst-launch-1.0 audiotestsrc freq=100 ! adder name=mix ! audioconvert ! autoaudiosink audiotestsrc freq=500 ! mix.
- * ]| This pipeline produces two sine waves mixed together.
- * </refsect2>
+ * ]|
+ *  This pipeline produces two sine waves mixed together.
+ *
  */
 /* Element-Checklist-Version: 5 */
 
@@ -1090,6 +1091,7 @@ gst_adder_collected (GstCollectPads * pads, gpointer user_data)
   gint rate, bps, bpf;
   gboolean had_mute = FALSE;
   gboolean is_eos = TRUE;
+  gboolean is_discont = FALSE;
 
   adder = GST_ADDER (user_data);
 
@@ -1111,7 +1113,7 @@ gst_adder_collected (GstCollectPads * pads, gpointer user_data)
     GstEvent *event;
 
     GST_INFO_OBJECT (adder->srcpad, "send pending stream start event");
-    /* FIXME: create id based on input ids, we can't use 
+    /* FIXME: create id based on input ids, we can't use
      * gst_pad_create_stream_id() though as that only handles 0..1 sink-pad
      */
     g_snprintf (s_id, sizeof (s_id), "adder-%08x", g_random_int ());
@@ -1144,7 +1146,7 @@ gst_adder_collected (GstCollectPads * pads, gpointer user_data)
           FALSE)) {
     GstEvent *event;
 
-    /* 
+    /*
      * When seeking we set the start and stop positions as given in the seek
      * event. We also adjust offset & timestamp accordingly.
      * This basically ignores all newsegments sent by upstream.
@@ -1169,6 +1171,7 @@ gst_adder_collected (GstCollectPads * pads, gpointer user_data)
           "start:%" G_GINT64_FORMAT "  end:%" G_GINT64_FORMAT " failed",
           adder->segment.start, adder->segment.stop);
     }
+    is_discont = TRUE;
   }
 
   /* get available bytes for reading, this can be 0 which could mean empty
@@ -1458,6 +1461,11 @@ gst_adder_collected (GstCollectPads * pads, gpointer user_data)
     GST_BUFFER_OFFSET (outbuf) = next_offset;
     GST_BUFFER_OFFSET_END (outbuf) = adder->offset;
     GST_BUFFER_DURATION (outbuf) = adder->segment.position - next_timestamp;
+  }
+  if (is_discont) {
+    GST_BUFFER_FLAG_SET (outbuf, GST_BUFFER_FLAG_DISCONT);
+  } else {
+    GST_BUFFER_FLAG_UNSET (outbuf, GST_BUFFER_FLAG_DISCONT);
   }
 
   adder->offset = next_offset;

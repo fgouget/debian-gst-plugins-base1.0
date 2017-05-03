@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>GstVideoPool: GStreamer Base Plugins 1.0 Library Reference Manual</title>
+<title>GstVideoBufferPool: GStreamer Base Plugins 1.0 Library Reference Manual</title>
 <meta name="generator" content="DocBook XSL Stylesheets V1.79.1">
 <link rel="home" href="index.html" title="GStreamer Base Plugins 1.0 Library Reference Manual">
 <link rel="up" href="gstreamer-video.html" title="Video Library">
@@ -26,8 +26,8 @@
 <a name="gst-plugins-base-libs-GstVideoPool"></a><div class="titlepage"></div>
 <div class="refnamediv"><table width="100%"><tr>
 <td valign="top">
-<h2><span class="refentrytitle"><a name="gst-plugins-base-libs-GstVideoPool.top_of_page"></a>GstVideoPool</span></h2>
-<p>GstVideoPool — GstBufferPool for raw video buffers</p>
+<h2><span class="refentrytitle"><a name="gst-plugins-base-libs-GstVideoPool.top_of_page"></a>GstVideoBufferPool</span></h2>
+<p>GstVideoBufferPool — GstBufferPool for raw video buffers</p>
 </td>
 <td class="gallery_image" valign="top" align="right"></td>
 </tr></table></div>
@@ -125,7 +125,7 @@ supports all the video bufferpool options.</p>
 <pre class="programlisting"><a href="/usr/share/gtk-doc/html/glibglib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
 gst_buffer_pool_config_get_video_alignment
                                (<em class="parameter"><code><a href="/usr/share/gtk-doc/html/gstreamer-1.0GstStructure.html#GstStructure-struct"><span class="type">GstStructure</span></a> *config</code></em>,
-                                <em class="parameter"><code><a class="link" href="gst-plugins-base-libs-gstvideo.html#GstVideoAlignment" title="struct GstVideoAlignment"><span class="type">GstVideoAlignment</span></a> *align</code></em>);</pre>
+                                <em class="parameter"><code><a class="link" href="gst-plugins-base-libs-GstVideoAlignment.html#GstVideoAlignment" title="struct GstVideoAlignment"><span class="type">GstVideoAlignment</span></a> *align</code></em>);</pre>
 <p>Get the video alignment from the bufferpool configuration <em class="parameter"><code>config</code></em>
  in
 in <em class="parameter"><code>align</code></em>
@@ -146,7 +146,7 @@ in <em class="parameter"><code>align</code></em>
 </tr>
 <tr>
 <td class="parameter_name"><p>align</p></td>
-<td class="parameter_description"><p>a <a class="link" href="gst-plugins-base-libs-gstvideo.html#GstVideoAlignment" title="struct GstVideoAlignment"><span class="type">GstVideoAlignment</span></a></p></td>
+<td class="parameter_description"><p>a <a class="link" href="gst-plugins-base-libs-GstVideoAlignment.html#GstVideoAlignment" title="struct GstVideoAlignment"><span class="type">GstVideoAlignment</span></a></p></td>
 <td class="parameter_annotations"> </td>
 </tr>
 </tbody>
@@ -164,7 +164,7 @@ could be parsed correctly.</p>
 <pre class="programlisting"><span class="returnvalue">void</span>
 gst_buffer_pool_config_set_video_alignment
                                (<em class="parameter"><code><a href="/usr/share/gtk-doc/html/gstreamer-1.0GstStructure.html#GstStructure-struct"><span class="type">GstStructure</span></a> *config</code></em>,
-                                <em class="parameter"><code><a class="link" href="gst-plugins-base-libs-gstvideo.html#GstVideoAlignment" title="struct GstVideoAlignment"><span class="type">GstVideoAlignment</span></a> *align</code></em>);</pre>
+                                <em class="parameter"><code><a class="link" href="gst-plugins-base-libs-GstVideoAlignment.html#GstVideoAlignment" title="struct GstVideoAlignment"><span class="type">GstVideoAlignment</span></a> *align</code></em>);</pre>
 <p>Set the video alignment in <em class="parameter"><code>align</code></em>
  to the bufferpool configuration
 <em class="parameter"><code>config</code></em>
@@ -185,7 +185,7 @@ gst_buffer_pool_config_set_video_alignment
 </tr>
 <tr>
 <td class="parameter_name"><p>align</p></td>
-<td class="parameter_description"><p>a <a class="link" href="gst-plugins-base-libs-gstvideo.html#GstVideoAlignment" title="struct GstVideoAlignment"><span class="type">GstVideoAlignment</span></a></p></td>
+<td class="parameter_description"><p>a <a class="link" href="gst-plugins-base-libs-GstVideoAlignment.html#GstVideoAlignment" title="struct GstVideoAlignment"><span class="type">GstVideoAlignment</span></a></p></td>
 <td class="parameter_annotations"> </td>
 </tr>
 </tbody>

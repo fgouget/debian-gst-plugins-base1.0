@@ -2,12 +2,12 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>dmabuf: GStreamer Base Plugins 1.0 Library Reference Manual</title>
+<title>GstDmaBufAllocator: GStreamer Base Plugins 1.0 Library Reference Manual</title>
 <meta name="generator" content="DocBook XSL Stylesheets V1.79.1">
 <link rel="home" href="index.html" title="GStreamer Base Plugins 1.0 Library Reference Manual">
 <link rel="up" href="gstreamer-allocators.html" title="Allocators Library">
 <link rel="prev" href="gstreamer-allocators.html" title="Allocators Library">
-<link rel="next" href="gst-plugins-base-libs-fdmemory.html" title="fdmemory">
+<link rel="next" href="gst-plugins-base-libs-fdmemory.html" title="GstFdAllocator">
 <meta name="generator" content="GTK-Doc V1.25 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
@@ -26,8 +26,8 @@
 <a name="gst-plugins-base-libs-dmabuf"></a><div class="titlepage"></div>
 <div class="refnamediv"><table width="100%"><tr>
 <td valign="top">
-<h2><span class="refentrytitle"><a name="gst-plugins-base-libs-dmabuf.top_of_page"></a>dmabuf</span></h2>
-<p>dmabuf — Memory wrapper for Linux dmabuf memory</p>
+<h2><span class="refentrytitle"><a name="gst-plugins-base-libs-dmabuf.top_of_page"></a>GstDmaBufAllocator</span></h2>
+<p>GstDmaBufAllocator — Memory wrapper for Linux dmabuf memory</p>
 </td>
 <td class="gallery_image" valign="top" align="right"></td>
 </tr></table></div>
@@ -65,6 +65,14 @@
 </tr>
 <tr>
 <td class="function_type">
+<a href="/usr/share/gtk-doc/html/gobjectgobject-Type-Information.html#GType"><span class="returnvalue">GType</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gst-plugins-base-libs-dmabuf.html#gst-dmabuf-allocator-get-type" title="gst_dmabuf_allocator_get_type ()">gst_dmabuf_allocator_get_type</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
 <a href="/usr/share/gtk-doc/html/glibglib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
 </td>
 <td class="function_name">
@@ -72,6 +80,19 @@
 </td>
 </tr>
 </tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="gst-plugins-base-libs-dmabuf.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody><tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="gst-plugins-base-libs-dmabuf.html#GST-CAPS-FEATURE-MEMORY-DMABUF:CAPS" title="GST_CAPS_FEATURE_MEMORY_DMABUF">GST_CAPS_FEATURE_MEMORY_DMABUF</a></td>
+</tr></tbody>
 </table></div>
 </div>
 <div class="refsect1">
@@ -176,6 +197,12 @@ if you intend to use it beyond the lifetime of this GstMemory.</p>
 </div>
 <hr>
 <div class="refsect2">
+<a name="gst-dmabuf-allocator-get-type"></a><h3>gst_dmabuf_allocator_get_type ()</h3>
+<pre class="programlisting"><a href="/usr/share/gtk-doc/html/gobjectgobject-Type-Information.html#GType"><span class="returnvalue">GType</span></a>
+gst_dmabuf_allocator_get_type (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
+</div>
+<hr>
+<div class="refsect2">
 <a name="gst-is-dmabuf-memory"></a><h3>gst_is_dmabuf_memory ()</h3>
 <pre class="programlisting"><a href="/usr/share/gtk-doc/html/glibglib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
 gst_is_dmabuf_memory (<em class="parameter"><code><a href="/usr/share/gtk-doc/html/gstreamer-1.0GstMemory.html#GstMemory-struct"><span class="type">GstMemory</span></a> *mem</code></em>);</pre>
@@ -206,6 +233,33 @@ is dmabuf memory, otherwise <a href="/usr/share/gtk-doc/html/glibglib-Standard-M
 </div>
 <div class="refsect1">
 <a name="gst-plugins-base-libs-dmabuf.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GST-CAPS-FEATURE-MEMORY-DMABUF:CAPS"></a><h3>GST_CAPS_FEATURE_MEMORY_DMABUF</h3>
+<pre class="programlisting">#define GST_CAPS_FEATURE_MEMORY_DMABUF "memory:DMABuf"
+</pre>
+<p>Constant that defines the caps feature name for DMA buffer sharing.</p>
+<p>It has to be used for non-mappable dma-buf only, i.e. when the underlying
+memory is not mappable to user space. Or when the mapped memory contains
+non meaningful data. It can be the case for protected content or when the
+user wants explicitly avoid any software post processing.</p>
+<p>In these cases all elements between the exported and the importer has to work
+in passthrough mode. This is done by adding this caps feature.</p>
+<p>When the memory is mappable for read and write requests then it is assumes
+to be a fast path and so this caps feature should not be used. Though
+according to the dma-buf protocal, while it is mapped it prevents the
+exporter to migrate the buffer.</p>
+<p>This caps feature should not serve at all the purpose of selecting the
+<em class="parameter"><code>GST_ALLOCATOR_DMABUF</code></em>
+ allocator during caps negotiation.
+When the exporter is the upstream element from the importer point of view,
+the exporter should try to map the dma buffer at runtime (preferrably during
+decide_allocation phase). When it succeeds for <a href="/usr/share/gtk-doc/html/gstreamer-1.0GstMemory.html#GST-MAP-READWRITE:CAPS"><span class="type">GST_MAP_READWRITE</span></a> this caps
+feature should not be used. This allows scalers, color converts and any image
+processing filters to work directly on the dma buffer.
+In this case the importer element should check all incomming memory using
+<a class="link" href="gst-plugins-base-libs-dmabuf.html#gst-is-dmabuf-memory" title="gst_is_dmabuf_memory ()"><code class="function">gst_is_dmabuf_memory()</code></a>.</p>
+<p class="since">Since: 1.11</p>
+</div>
 </div>
 <div class="refsect1">
 <a name="gst-plugins-base-libs-dmabuf.see-also"></a><h2>See Also</h2>

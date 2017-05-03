@@ -24,6 +24,7 @@
 
 /**
  * SECTION:element-decodebin
+ * @title: decodebin
  *
  * #GstBin that auto-magically constructs a decoding pipeline using available
  * decoders and demuxers via auto-plugging.
@@ -321,6 +322,7 @@ static gboolean gst_decode_bin_remove_element (GstBin * bin,
 static gboolean check_upstream_seekable (GstDecodeBin * dbin, GstPad * pad);
 
 static GstCaps *get_pad_caps (GstPad * pad);
+static void unblock_pads (GstDecodeBin * dbin);
 
 #define EXPOSE_LOCK(dbin) G_STMT_START {				\
     GST_LOG_OBJECT (dbin,						\
@@ -716,11 +718,9 @@ gst_decode_bin_class_init (GstDecodeBinClass * klass)
    * This signal is emitted whenever decodebin finds a new stream. It is
    * emitted before looking for any elements that can handle that stream.
    *
-   * <note>
-   *   Invocation of signal handlers stops after the first signal handler
-   *   returns #FALSE. Signal handlers are invoked in the order they were
-   *   connected in.
-   * </note>
+   * >   Invocation of signal handlers stops after the first signal handler
+   * >   returns #FALSE. Signal handlers are invoked in the order they were
+   * >   connected in.
    *
    * Returns: #TRUE if you wish decodebin to look for elements that can
    * handle the given @caps. If #FALSE, those caps will be considered as
@@ -748,11 +748,9 @@ gst_decode_bin_class_init (GstDecodeBinClass * klass)
    * If this function returns an empty array, the pad will be considered as
    * having an unhandled type media type.
    *
-   * <note>
-   *   Only the signal handler that is connected first will ever by invoked.
-   *   Don't connect signal handlers with the #G_CONNECT_AFTER flag to this
-   *   signal, they will never be invoked!
-   * </note>
+   * >   Only the signal handler that is connected first will ever by invoked.
+   * >   Don't connect signal handlers with the #G_CONNECT_AFTER flag to this
+   * >   signal, they will never be invoked!
    *
    * Returns: a #GValueArray* with a list of factories to try. The factories are
    * by default tried in the returned order or based on the index returned by
@@ -780,13 +778,11 @@ gst_decode_bin_class_init (GstDecodeBinClass * klass)
    * The callee should copy and modify @factories or return #NULL if the
    * order should not change.
    *
-   * <note>
-   *   Invocation of signal handlers stops after one signal handler has
-   *   returned something else than #NULL. Signal handlers are invoked in
-   *   the order they were connected in.
-   *   Don't connect signal handlers with the #G_CONNECT_AFTER flag to this
-   *   signal, they will never be invoked!
-   * </note>
+   * >   Invocation of signal handlers stops after one signal handler has
+   * >   returned something else than #NULL. Signal handlers are invoked in
+   * >   the order they were connected in.
+   * >   Don't connect signal handlers with the #G_CONNECT_AFTER flag to this
+   * >   signal, they will never be invoked!
    *
    * Returns: A new sorted array of #GstElementFactory objects.
    */
@@ -820,13 +816,11 @@ gst_decode_bin_class_init (GstDecodeBinClass * klass)
    * A value of #GST_AUTOPLUG_SELECT_SKIP will skip @factory and move to the
    * next factory.
    *
-   * <note>
-   *   The signal handler will not be invoked if any of the previously
-   *   registered signal handlers (if any) return a value other than
-   *   GST_AUTOPLUG_SELECT_TRY. Which also means that if you return
-   *   GST_AUTOPLUG_SELECT_TRY from one signal handler, handlers that get
-   *   registered next (again, if any) can override that decision.
-   * </note>
+   * >   The signal handler will not be invoked if any of the previously
+   * >   registered signal handlers (if any) return a value other than
+   * >   GST_AUTOPLUG_SELECT_TRY. Which also means that if you return
+   * >   GST_AUTOPLUG_SELECT_TRY from one signal handler, handlers that get
+   * >   registered next (again, if any) can override that decision.
    *
    * Returns: a #GST_TYPE_AUTOPLUG_SELECT_RESULT that indicates the required
    * operation. the default handler will always return
@@ -1127,6 +1121,8 @@ gst_decode_bin_dispose (GObject * object)
 
   g_list_free (decode_bin->subtitles);
   decode_bin->subtitles = NULL;
+
+  unblock_pads (decode_bin);
 
   G_OBJECT_CLASS (parent_class)->dispose (object);
 }
@@ -4368,7 +4364,7 @@ sort_end_pads (GstDecodePad * da, GstDecodePad * db)
 
 static GstCaps *
 _gst_element_get_linked_caps (GstElement * src, GstElement * sink,
-    GstPad ** srcpad)
+    GstElement * capsfilter, GstPad ** srcpad)
 {
   GstIterator *it;
   GstElement *parent;
@@ -4385,12 +4381,9 @@ _gst_element_get_linked_caps (GstElement * src, GstElement * sink,
         peer = gst_pad_get_peer (pad);
         if (peer) {
           parent = gst_pad_get_parent_element (peer);
-          if (parent == sink) {
+          if (parent == sink || (capsfilter != NULL && parent == capsfilter)) {
             caps = gst_pad_get_current_caps (pad);
-            if (srcpad) {
-              gst_object_ref (pad);
-              *srcpad = pad;
-            }
+            *srcpad = gst_object_ref (pad);
             done = TRUE;
           }
 
@@ -4442,15 +4435,22 @@ gst_decode_chain_get_topology (GstDecodeChain * chain)
   /* Now at the last element */
   if ((chain->elements || !chain->active_group) &&
       (chain->endpad || chain->deadend)) {
+    GstPad *srcpad;
+
     s = gst_structure_new_id_empty (topology_structure_name);
     gst_structure_id_set (u, topology_caps, GST_TYPE_CAPS, chain->endcaps,
         NULL);
 
     if (chain->endpad) {
       gst_structure_id_set (u, topology_pad, GST_TYPE_PAD, chain->endpad, NULL);
+
+      srcpad = gst_ghost_pad_get_target (GST_GHOST_PAD_CAST (chain->endpad));
       gst_structure_id_set (u, topology_element_srcpad, GST_TYPE_PAD,
-          chain->endpad, NULL);
+          srcpad, NULL);
+
+      gst_object_unref (srcpad);
     }
+
     gst_structure_id_set (s, topology_next, GST_TYPE_STRUCTURE, u, NULL);
     gst_structure_free (u);
     u = s;
@@ -4478,7 +4478,7 @@ gst_decode_chain_get_topology (GstDecodeChain * chain)
   l = (chain->elements && chain->elements->next) ? chain->elements : NULL;
   for (; l && l->next; l = l->next) {
     GstDecodeElement *delem, *delem_next;
-    GstElement *elem, *elem_next;
+    GstElement *elem, *capsfilter, *elem_next;
     GstCaps *caps;
     GstPad *srcpad;
 
@@ -4486,9 +4486,10 @@ gst_decode_chain_get_topology (GstDecodeChain * chain)
     elem = delem->element;
     delem_next = l->next->data;
     elem_next = delem_next->element;
+    capsfilter = delem_next->capsfilter;
     srcpad = NULL;
 
-    caps = _gst_element_get_linked_caps (elem_next, elem, &srcpad);
+    caps = _gst_element_get_linked_caps (elem_next, elem, capsfilter, &srcpad);
 
     if (caps) {
       s = gst_structure_new_id_empty (topology_structure_name);
@@ -5183,19 +5184,20 @@ unblock_pads (GstDecodeBin * dbin)
     GstPad *opad;
 
     opad = gst_ghost_pad_get_target (GST_GHOST_PAD_CAST (dpad));
-    if (!opad)
-      continue;
+    if (opad) {
 
-    GST_DEBUG_OBJECT (dpad, "unblocking");
-    if (dpad->block_id != 0) {
-      gst_pad_remove_probe (opad, dpad->block_id);
-      dpad->block_id = 0;
+      GST_DEBUG_OBJECT (dpad, "unblocking");
+      if (dpad->block_id != 0) {
+        gst_pad_remove_probe (opad, dpad->block_id);
+        dpad->block_id = 0;
+      }
+      gst_object_unref (opad);
     }
+
     dpad->blocked = FALSE;
     /* make flushing, prevent NOT_LINKED */
     gst_pad_set_active (GST_PAD_CAST (dpad), FALSE);
     gst_object_unref (dpad);
-    gst_object_unref (opad);
     GST_DEBUG_OBJECT (dpad, "unblocked");
   }
 
@@ -5314,6 +5316,7 @@ gst_decode_bin_change_state (GstElement * element, GstStateChange transition)
           G_CALLBACK (type_found), dbin);
       break;
     case GST_STATE_CHANGE_PAUSED_TO_READY:
+    case GST_STATE_CHANGE_READY_TO_NULL:
       if (dbin->have_type_id)
         g_signal_handler_disconnect (dbin->typefind, dbin->have_type_id);
       dbin->have_type_id = 0;
@@ -5385,12 +5388,22 @@ gst_decode_bin_handle_message (GstBin * bin, GstMessage * msg)
   gboolean drop = FALSE;
 
   if (GST_MESSAGE_TYPE (msg) == GST_MESSAGE_ERROR) {
-    GST_OBJECT_LOCK (dbin);
-    drop = (g_list_find (dbin->filtered, GST_MESSAGE_SRC (msg)) != NULL);
-    if (drop)
-      dbin->filtered_errors =
-          g_list_prepend (dbin->filtered_errors, gst_message_ref (msg));
-    GST_OBJECT_UNLOCK (dbin);
+    /* Don't pass errors when shutting down. Sometimes,
+     * elements can generate spurious errors because we set the
+     * output pads to flushing, and they can't detect that if they
+     * send an event at exactly the wrong moment */
+    DYN_LOCK (dbin);
+    drop = dbin->shutdown;
+    DYN_UNLOCK (dbin);
+
+    if (!drop) {
+      GST_OBJECT_LOCK (dbin);
+      drop = (g_list_find (dbin->filtered, GST_MESSAGE_SRC (msg)) != NULL);
+      if (drop)
+        dbin->filtered_errors =
+            g_list_prepend (dbin->filtered_errors, gst_message_ref (msg));
+      GST_OBJECT_UNLOCK (dbin);
+    }
   } else if (GST_MESSAGE_TYPE (msg) == GST_MESSAGE_BUFFERING) {
     gint perc, msg_perc;
     gint smaller_perc = 100;
@@ -5501,6 +5514,7 @@ gst_decode_bin_remove_element (GstBin * bin, GstElement * element)
   GList *iter;
 
   BUFFERING_LOCK (bin);
+  g_mutex_lock (&dbin->buffering_post_lock);
   for (iter = dbin->buffering_status; iter; iter = iter->next) {
     GstMessage *bufstats = iter->data;
 
@@ -5523,6 +5537,7 @@ gst_decode_bin_remove_element (GstBin * bin, GstElement * element)
     gst_element_post_message (GST_ELEMENT_CAST (bin),
         gst_message_new_buffering (GST_OBJECT_CAST (dbin), 100));
   }
+  g_mutex_unlock (&dbin->buffering_post_lock);
 
   return GST_BIN_CLASS (parent_class)->remove_element (bin, element);
 }

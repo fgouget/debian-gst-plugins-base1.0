@@ -20,6 +20,7 @@
 
 /**
  * SECTION:element-videoscale
+ * @title: videoscale
  * @see_also: videorate, videoconvert
  *
  * This element resizes video frames. By default the element will try to
@@ -31,18 +32,19 @@
  * RGB formats and is therefore generally able to operate anywhere in a
  * pipeline.
  *
- * <refsect2>
- * <title>Example pipelines</title>
+ * ## Example pipelines
  * |[
  * gst-launch-1.0 -v filesrc location=videotestsrc.ogg ! oggdemux ! theoradec ! videoconvert ! videoscale ! autovideosink
- * ]| Decode an Ogg/Theora and display the video. If the video sink chosen
+ * ]|
+ *  Decode an Ogg/Theora and display the video. If the video sink chosen
  * cannot perform scaling, the video scaling will be performed by videoscale
  * when you resize the video window.
  * To create the test Ogg/Theora file refer to the documentation of theoraenc.
  * |[
  * gst-launch-1.0 -v filesrc location=videotestsrc.ogg ! oggdemux ! theoradec ! videoconvert ! videoscale ! video/x-raw,width=100 ! autovideosink
- * ]| Decode an Ogg/Theora and display the video with a width of 100.
- * </refsect2>
+ * ]|
+ *  Decode an Ogg/Theora and display the video with a width of 100.
+ *
  */
 
 /* 
@@ -90,6 +92,7 @@ GST_DEBUG_CATEGORY_STATIC (CAT_PERFORMANCE);
 #define DEFAULT_PROP_SUBMETHOD    1
 #define DEFAULT_PROP_ENVELOPE     2.0
 #define DEFAULT_PROP_GAMMA_DECODE FALSE
+#define DEFAULT_PROP_N_THREADS    1
 
 enum
 {
@@ -102,6 +105,7 @@ enum
   PROP_SUBMETHOD,
   PROP_ENVELOPE,
   PROP_GAMMA_DECODE,
+  PROP_N_THREADS
 };
 
 #undef GST_VIDEO_SIZE_RANGE
@@ -260,6 +264,11 @@ gst_video_scale_class_init (GstVideoScaleClass * klass)
           "Decode gamma before scaling", DEFAULT_PROP_GAMMA_DECODE,
           G_PARAM_CONSTRUCT | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
+  g_object_class_install_property (gobject_class, PROP_N_THREADS,
+      g_param_spec_uint ("n-threads", "Threads",
+          "Maximum number of threads to use", 0, G_MAXUINT,
+          DEFAULT_PROP_N_THREADS,
+          G_PARAM_CONSTRUCT | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   gst_element_class_set_static_metadata (element_class,
       "Video scaler", "Filter/Converter/Video/Scaler",
@@ -291,6 +300,7 @@ gst_video_scale_init (GstVideoScale * videoscale)
   videoscale->dither = DEFAULT_PROP_DITHER;
   videoscale->envelope = DEFAULT_PROP_ENVELOPE;
   videoscale->gamma_decode = DEFAULT_PROP_GAMMA_DECODE;
+  videoscale->n_threads = DEFAULT_PROP_N_THREADS;
 }
 
 static void
@@ -350,6 +360,11 @@ gst_video_scale_set_property (GObject * object, guint prop_id,
       vscale->gamma_decode = g_value_get_boolean (value);
       GST_OBJECT_UNLOCK (vscale);
       break;
+    case PROP_N_THREADS:
+      GST_OBJECT_LOCK (vscale);
+      vscale->n_threads = g_value_get_uint (value);
+      GST_OBJECT_UNLOCK (vscale);
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -401,6 +416,11 @@ gst_video_scale_get_property (GObject * object, guint prop_id, GValue * value,
     case PROP_GAMMA_DECODE:
       GST_OBJECT_LOCK (vscale);
       g_value_set_boolean (value, vscale->gamma_decode);
+      GST_OBJECT_UNLOCK (vscale);
+      break;
+    case PROP_N_THREADS:
+      GST_OBJECT_LOCK (vscale);
+      g_value_set_uint (value, vscale->n_threads);
       GST_OBJECT_UNLOCK (vscale);
       break;
     default:
@@ -606,7 +626,9 @@ gst_video_scale_set_info (GstVideoFilter * filter, GstCaps * in,
         GST_VIDEO_MATRIX_MODE_NONE, GST_VIDEO_CONVERTER_OPT_DITHER_METHOD,
         GST_TYPE_VIDEO_DITHER_METHOD, GST_VIDEO_DITHER_NONE,
         GST_VIDEO_CONVERTER_OPT_CHROMA_MODE, GST_TYPE_VIDEO_CHROMA_MODE,
-        GST_VIDEO_CHROMA_MODE_NONE, NULL);
+        GST_VIDEO_CHROMA_MODE_NONE,
+        GST_VIDEO_CONVERTER_OPT_THREADS, G_TYPE_UINT, videoscale->n_threads,
+        NULL);
 
     if (videoscale->gamma_decode) {
       gst_structure_set (options,
