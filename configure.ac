@@ -1,16 +1,16 @@
-AC_PREREQ([2.68])
+AC_PREREQ([2.69])
 
 dnl please read gstreamer/docs/random/autotools before changing this file
 
 dnl initialize autoconf
 dnl releases only do -Wall, git and prerelease does -Werror too
 dnl use a three digit version number for releases, and four for git/prerelease
-AC_INIT([GStreamer Base Plug-ins],[1.4.4],[http://bugzilla.gnome.org/enter_bug.cgi?product=GStreamer],[gst-plugins-base])
+AC_INIT([GStreamer Base Plug-ins],[1.10.4],[http://bugzilla.gnome.org/enter_bug.cgi?product=GStreamer],[gst-plugins-base])
 
 AG_GST_INIT
 
 dnl initialize automake
-AM_INIT_AUTOMAKE([-Wno-portability 1.11 no-dist-gzip dist-xz tar-ustar subdir-objects])
+AM_INIT_AUTOMAKE([-Wno-portability 1.14 no-dist-gzip dist-xz tar-ustar subdir-objects])
 
 dnl define PACKAGE_VERSION_* variables
 AS_VERSION
@@ -56,10 +56,10 @@ dnl      1.2.5 => 205
 dnl      1.10.9 (who knows) => 1009
 dnl
 dnl sets GST_LT_LDFLAGS
-AS_LIBTOOL(GST, 404, 0, 404)
+AS_LIBTOOL(GST, 1004, 0, 1004)
 
 dnl *** required versions of GStreamer stuff ***
-GST_REQ=1.4.0
+GST_REQ=1.10.0
 
 dnl *** autotools stuff ****
 
@@ -78,6 +78,7 @@ AG_GST_GETTEXT([gst-plugins-base-$GST_API_VERSION])
 dnl *** check for arguments to configure ***
 
 AG_GST_ARG_DISABLE_FATAL_WARNINGS
+AG_GST_ARG_ENABLE_EXTRA_CHECKS
 
 AG_GST_ARG_DEBUG
 AG_GST_ARG_PROFILING
@@ -166,6 +167,9 @@ dnl libm, for sin() etc.
 LT_LIB_M
 AC_SUBST(LIBM)
 
+dnl check for pthreads
+AX_PTHREAD
+
 dnl *** checks for header files ***
 
 dnl check if we have ANSI C header files
@@ -173,7 +177,31 @@ AC_HEADER_STDC
 
 dnl check for GCC specific SSE headers
 dnl these are used by the speex resampler code
-AC_CHECK_HEADERS([xmmintrin.h emmintrin.h])
+AC_CHECK_HEADERS([xmmintrin.h emmintrin.h smmintrin.h])
+
+dnl also check which architecture we're on for building files with intrinsics
+dnl separately
+AC_CHECK_DECLS([__i386__], [HAVE_X86=1])
+AC_CHECK_DECLS([__x86_64__], [HAVE_X86=1])
+
+dnl check for -m* compiler flags too
+SSE_CFLAGS="-msse"
+SSE2_CFLAGS="-msse2"
+SSE41_CFLAGS="-msse4.1"
+
+AS_COMPILER_FLAG([$SSE_CFLAGS], [HAVE_SSE=1], [HAVE_SSE=0])
+AS_COMPILER_FLAG([$SSE2_CFLAGS], [HAVE_SSE2=1], [HAVE_SSE2=0])
+AS_COMPILER_FLAG([$SSE41_CFLAGS], [HAVE_SSE41=1], [HAVE_SSE41=0])
+
+AM_CONDITIONAL(HAVE_X86, [test "x${HAVE_X86}" = "x1"])
+
+AC_DEFINE_UNQUOTED(HAVE_SSE, [$HAVE_SSE], [SSE support is enabled])
+AC_DEFINE_UNQUOTED(HAVE_SSE2, [$HAVE_SSE2], [SSE2 support is enabled])
+AC_DEFINE_UNQUOTED(HAVE_SSE41, [$HAVE_SSE41], [SSE4.1 support is enabled])
+
+AC_SUBST(SSE_CFLAGS)
+AC_SUBST(SSE2_CFLAGS)
+AC_SUBST(SSE41_CFLAGS)
 
 dnl used in gst/tcp
 AC_CHECK_HEADERS([sys/socket.h],
@@ -247,14 +275,15 @@ AG_GST_CHECK_FUNCTION
 dnl *** checks for dependency libraries ***
 
 dnl GLib
-GLIB_REQ=2.32
+GLIB_REQ=2.40.0
 AG_GST_GLIB_CHECK([$GLIB_REQ])
 
-ORC_CHECK([0.4.18])
+ORC_CHECK([0.4.24])
 
 dnl checks for gstreamer
 dnl uninstalled is selected preferentially -- see pkg-config(1)
 AG_GST_CHECK_GST($GST_API_VERSION, [$GST_REQ], yes)
+AG_GST_CHECK_GST_NET($GST_API_VERSION, [$GST_REQ], yes)
 AG_GST_CHECK_GST_BASE($GST_API_VERSION, [$GST_REQ], yes)
 AG_GST_CHECK_GST_CONTROLLER($GST_API_VERSION, [$GST_REQ], yes)
 AG_GST_CHECK_GST_CHECK($GST_API_VERSION, [$GST_REQ], no)
@@ -269,7 +298,7 @@ AC_SUBST(GST_PREFIX)
 dnl GTK is optional and only used in examples
 HAVE_GTK=no
 HAVE_GTK_X11=no
-GTK_REQ=3.0.0
+GTK_REQ=3.10
 if test "x$BUILD_EXAMPLES" = "xyes"; then
   PKG_CHECK_MODULES(GTK, gtk+-3.0 >= $GTK_REQ, HAVE_GTK=yes, HAVE_GTK=no)
   dnl some examples need gtk+-x11
@@ -345,15 +374,16 @@ dnl Check for -Bsymbolic-functions linker flag used to avoid
 dnl intra-library PLT jumps, if available.
 AC_ARG_ENABLE(Bsymbolic,
               [AS_HELP_STRING([--disable-Bsymbolic],[avoid linking with -Bsymbolic])],,
-              [SAVED_LDFLAGS="${LDFLAGS}"
+              [SAVED_LDFLAGS="${LDFLAGS}" SAVED_LIBS="${LIBS}"
                AC_MSG_CHECKING([for -Bsymbolic-functions linker flag])
                LDFLAGS=-Wl,-Bsymbolic-functions
-               AC_LINK_IFELSE([AC_LANG_PROGRAM([[]], [[int main (void) { return 0; }]])],[
+               LIBS=
+               AC_TRY_LINK([], [return 0],
                            AC_MSG_RESULT(yes)
-                           enable_Bsymbolic=yes],[
+                           enable_Bsymbolic=yes,
                            AC_MSG_RESULT(no)
-                           enable_Bsymbolic=no])
-               LDFLAGS="${SAVED_LDFLAGS}"])
+                           enable_Bsymbolic=no)
+               LDFLAGS="${SAVED_LDFLAGS}" LIBS="${SAVED_LIBS}"])
 
 
 dnl *** set variables based on configure arguments ***
@@ -392,6 +422,12 @@ else
 fi
 AC_SUBST(GST_PLUGIN_LIBTOOLFLAGS)
 AM_CONDITIONAL(GST_PLUGIN_BUILD_STATIC, test "x$enable_static_plugins" = "xyes")
+
+dnl If only building static libraries, define GST_STATIC_COMPILATION. This is
+dnl needed only on Windows, but it doesn't hurt to have it everywhere.
+if test x$enable_static = xyes -a x$enable_shared = xno; then
+  GST_STATIC_CFLAGS="-DGST_STATIC_COMPILATION"
+fi
 
 # set by AG_GST_PARSE_SUBSYSTEM_DISABLES above
 dnl make sure it doesn't complain about unused variables if debugging is disabled
@@ -542,34 +578,30 @@ dnl *** X11 ***
 translit(dnm, m, l) AM_CONDITIONAL(USE_X, true)
 AG_GST_CHECK_FEATURE(X, [X libraries and plugins],
                   [ximagesink], [
-  AG_GST_CHECK_X
+  AG_GST_PKG_CHECK_MODULES(X, x11)
 ])
 
 dnl Check for Xv extension
 translit(dnm, m, l) AM_CONDITIONAL(USE_XVIDEO, true)
 AG_GST_CHECK_FEATURE(XVIDEO, [X11 XVideo extensions],
                   [xvimagesink], [
-  AG_GST_CHECK_XV
+  AG_GST_PKG_CHECK_MODULES(XVIDEO, x11 xv)
 ])
 
 dnl check for X Shm
 translit(dnm, m, l) AM_CONDITIONAL(USE_XSHM, true)
-AG_GST_CHECK_FEATURE(XSHM, [X Shared Memory extension], , [
+AG_GST_CHECK_FEATURE(XSHM, [X Shared Memory extension], [ ], [
   if test x$HAVE_X = xyes; then
-    AC_CHECK_LIB(Xext, XShmAttach,
-		 HAVE_XSHM="yes", HAVE_XSHM="no",
-		 $X_LIBS)
-    if test "x$HAVE_XSHM" = "xyes"; then
-      XSHM_LIBS="-lXext"
-    else
-      dnl On AIX, it is in XextSam instead, but we still need -lXext
-      AC_CHECK_LIB(XextSam, XShmAttach,
-		   HAVE_XSHM="yes", HAVE_XSHM="no",
-		   $X_LIBS)
-      if test "x$HAVE_XSHM" = "xyes"; then
-	XSHM_LIBS="-lXext -lXextSam"
-      fi
-    fi
+    PKG_CHECK_MODULES(XSHM, xext, [
+      AC_CHECK_LIB(Xext, XShmAttach, [
+        HAVE_XSHM="yes"
+      ], [
+        HAVE_XSHM="no"
+        XSHM_LIBS=""
+      ], [ $X_LIBS ])
+    ], [
+      HAVE_XSHM="no"
+    ])
   fi
 ], , [
   AC_SUBST(HAVE_XSHM)
@@ -688,6 +720,19 @@ AG_GST_CHECK_FEATURE(OGG, [Xiph Ogg library], ogg, [
   AG_GST_PKG_CHECK_MODULES(OGG, ogg >= 1.0)
 ])
 
+dnl *** Opus ***
+translit(dnm, m, l) AM_CONDITIONAL(USE_OPUS, true)
+AG_GST_CHECK_FEATURE(OPUS, [opus], opus, [
+  PKG_CHECK_MODULES(OPUS, opus >= 0.9.4, [
+          AC_DEFINE([HAVE_OPUS], 1, [Define if Opus >= 0.9.4 is installed])
+          HAVE_OPUS="yes"
+  ], [
+          HAVE_OPUS="no"
+  ])
+  AC_SUBST(OPUS_CFLAGS)
+  AC_SUBST(OPUS_LIBS)
+])
+
 dnl *** pango ***
 translit(dnm, m, l) AM_CONDITIONAL(USE_PANGO, true)
 AG_GST_CHECK_FEATURE(PANGO, [Pango font rendering], pango, [
@@ -732,20 +777,18 @@ AM_CONDITIONAL(USE_CDPARANOIA, false)
 AM_CONDITIONAL(USE_IVORBIS, false)
 AM_CONDITIONAL(USE_LIBVISUAL, false)
 AM_CONDITIONAL(USE_OGG, false)
+AM_CONDITIONAL(USE_OPUS, false)
 AM_CONDITIONAL(USE_PANGO, false)
 AM_CONDITIONAL(USE_THEORA, false)
 AM_CONDITIONAL(USE_VORBIS, false)
 
 fi dnl of EXT plugins
 
-dnl seeking needs freetype, so check for it here
-PKG_CHECK_MODULES(FT2, freetype2 >= 2.0.9, HAVE_FT2="yes", [
-  AC_CHECK_FT2(2.0.9, HAVE_FT2="yes", HAVE_FT2="no")
-])
-dnl make the HAVE_FT2 variable available to automake and Makefile.am
-AM_CONDITIONAL(HAVE_FT2, test "x$HAVE_FT2" = "xyes")
-AC_SUBST(FT2_CFLAGS)
-AC_SUBST(FT2_LIBS)
+dnl *** gio-unix-2.0 for tests/check/pipelines/tcp.c ***
+PKG_CHECK_MODULES(GIO_UNIX_2_0, gio-unix-2.0 >= 2.24,
+    HAVE_GIO_UNIX_2_0="yes",
+    HAVE_GIO_UNIX_2_0="no")
+AM_CONDITIONAL(USE_GIO_UNIX_2_0, test "x$HAVE_GIO_UNIX_2_0" = "xyes")
 
 dnl *** finalize CFLAGS, LDFLAGS, LIBS
 
@@ -791,7 +834,7 @@ AC_SUBST(GST_PLUGINS_BASE_CFLAGS)
 
 dnl FIXME: do we want to rename to GST_ALL_* ?
 dnl add GST_OPTION_CFLAGS, but overridable
-GST_CFLAGS="$GST_CFLAGS"
+GST_CFLAGS="$GST_CFLAGS $GST_STATIC_CFLAGS"
 GST_CXXFLAGS="$GLIB_CFLAGS $GST_CFLAGS \$(GLIB_EXTRA_CFLAGS) \$(GST_OPTION_CXXFLAGS)"
 GST_CFLAGS="$GLIB_CFLAGS $GST_CFLAGS \$(GLIB_EXTRA_CFLAGS) \$(GST_OPTION_CFLAGS)"
 AC_SUBST(GST_CFLAGS)
@@ -853,6 +896,7 @@ ext/alsa/Makefile
 ext/cdparanoia/Makefile
 ext/libvisual/Makefile
 ext/ogg/Makefile
+ext/opus/Makefile
 ext/pango/Makefile
 ext/theora/Makefile
 ext/vorbis/Makefile
@@ -901,6 +945,7 @@ tests/check/Makefile
 tests/examples/Makefile
 tests/examples/app/Makefile
 tests/examples/audio/Makefile
+tests/examples/decodebin_next/Makefile
 tests/examples/dynamic/Makefile
 tests/examples/encoding/Makefile
 tests/examples/fft/Makefile

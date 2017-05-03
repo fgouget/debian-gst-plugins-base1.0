@@ -41,9 +41,11 @@ typedef struct _GstVideoCodecFrame GstVideoCodecFrame;
 /**
  * GstVideoCodecState:
  * @info: The #GstVideoInfo describing the stream
- * @caps: The #GstCaps
+ * @caps: The #GstCaps used in the caps negotiation of the pad.
  * @codec_data: a #GstBuffer corresponding to the
  *     'codec_data' field of a stream, or NULL.
+ * @allocation_caps: The #GstCaps for allocation query and pool
+ *     negotiation. Since: 1.10
  *
  * Structure representing the state of an incoming or outgoing video
  * stream for encoders and decoders.
@@ -67,8 +69,10 @@ struct _GstVideoCodecState
 
   GstBuffer *codec_data;
 
+  GstCaps *allocation_caps;
+
   /*< private >*/
-  void         *padding[GST_PADDING_LARGE];
+  void         *padding[GST_PADDING_LARGE - 1];
 };
 
 /**
@@ -206,6 +210,7 @@ typedef enum
  * @distance_from_sync: Distance in frames from the last synchronization point.
  * @input_buffer: the input #GstBuffer that created this frame. The buffer is owned
  *           by the frame and references to the frame instead of the buffer should
+ *           be kept.
  * @output_buffer: the output #GstBuffer. Implementations should set this either
  *           directly, or by using the
  *           @gst_video_decoder_allocate_output_frame() or
@@ -213,7 +218,6 @@ typedef enum
  *           owned by the frame and references to the frame instead of the
  *           buffer should be kept.
  * @deadline: Running time when the frame will be used.
- * @events: Events that will be pushed downstream before this frame is pushed.
  *
  * A #GstVideoCodecFrame represents a video frame both in raw and
  * encoded form.
@@ -276,6 +280,14 @@ void                 gst_video_codec_frame_set_user_data (GstVideoCodecFrame *fr
 						          gpointer user_data,
 				                          GDestroyNotify notify);
 gpointer             gst_video_codec_frame_get_user_data (GstVideoCodecFrame *frame);
+
+#ifdef G_DEFINE_AUTOPTR_CLEANUP_FUNC
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(GstVideoCodecFrame, gst_video_codec_frame_unref)
+#endif
+
+#ifdef G_DEFINE_AUTOPTR_CLEANUP_FUNC
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(GstVideoCodecState, gst_video_codec_state_unref)
+#endif
 
 G_END_DECLS
 
