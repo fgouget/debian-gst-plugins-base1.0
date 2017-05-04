@@ -1,6 +1,6 @@
 libgstallocators-1.0.so.0 libgstreamer-plugins-base1.0-0 #MINVER#
  gst_dmabuf_allocator_alloc@Base 1.2.0
- gst_dmabuf_allocator_get_type@Base 1.11.91
+ gst_dmabuf_allocator_get_type@Base 1.12.0
  gst_dmabuf_allocator_new@Base 1.2.0
  gst_dmabuf_memory_get_fd@Base 1.2.0
  gst_fd_allocator_alloc@Base 1.6.0
@@ -10,7 +10,7 @@ libgstallocators-1.0.so.0 libgstreamer-plugins-base1.0-0 #MINVER#
  gst_is_dmabuf_memory@Base 1.2.0
  gst_is_fd_memory@Base 1.6.0
 libgstapp-1.0.so.0 libgstreamer-plugins-base1.0-0 #MINVER#
- gst_app_sink_get_buffer_list_support@Base 1.11.91
+ gst_app_sink_get_buffer_list_support@Base 1.12.0
  gst_app_sink_get_caps@Base 1.0.0
  gst_app_sink_get_drop@Base 1.0.0
  gst_app_sink_get_emit_signals@Base 1.0.0
@@ -20,7 +20,7 @@ libgstapp-1.0.so.0 libgstreamer-plugins-base1.0-0 #MINVER#
  gst_app_sink_is_eos@Base 1.0.0
  gst_app_sink_pull_preroll@Base 1.0.0
  gst_app_sink_pull_sample@Base 1.0.0
- gst_app_sink_set_buffer_list_support@Base 1.11.91
+ gst_app_sink_set_buffer_list_support@Base 1.12.0
  gst_app_sink_set_callbacks@Base 1.0.0
  gst_app_sink_set_caps@Base 1.0.0
  gst_app_sink_set_drop@Base 1.0.0
@@ -53,7 +53,7 @@ libgstapp-1.0.so.0 libgstreamer-plugins-base1.0-0 #MINVER#
 libgstaudio-1.0.so.0 libgstreamer-plugins-base1.0-0 #MINVER#
  _gst_audio_decoder_error@Base 1.0.0
  gst_audio_base_sink_create_ringbuffer@Base 1.0.0
- gst_audio_base_sink_discont_reason_get_type@Base 1.11.91
+ gst_audio_base_sink_discont_reason_get_type@Base 1.12.0
  gst_audio_base_sink_get_alignment_threshold@Base 1.0.0
  gst_audio_base_sink_get_discont_wait@Base 1.0.0
  gst_audio_base_sink_get_drift_tolerance@Base 1.0.0
@@ -109,7 +109,7 @@ libgstaudio-1.0.so.0 libgstreamer-plugins-base1.0-0 #MINVER#
  gst_audio_converter_new@Base 1.8.0
  gst_audio_converter_reset@Base 1.8.0
  gst_audio_converter_samples@Base 1.8.0
- gst_audio_converter_supports_inplace@Base 1.11.91
+ gst_audio_converter_supports_inplace@Base 1.12.0
  gst_audio_converter_update_config@Base 1.8.0
  gst_audio_decoder_allocate_output_buffer@Base 1.0.0
  gst_audio_decoder_finish_frame@Base 1.0.0
@@ -250,7 +250,7 @@ libgstaudio-1.0.so.0 libgstreamer-plugins-base1.0-0 #MINVER#
  gst_audio_ring_buffer_release@Base 1.0.0
  gst_audio_ring_buffer_samples_done@Base 1.0.0
  gst_audio_ring_buffer_set_callback@Base 1.0.0
- gst_audio_ring_buffer_set_callback_full@Base 1.11.91
+ gst_audio_ring_buffer_set_callback_full@Base 1.12.0
  gst_audio_ring_buffer_set_channel_positions@Base 1.0.0
  gst_audio_ring_buffer_set_flushing@Base 1.0.0
  gst_audio_ring_buffer_set_sample@Base 1.0.0
@@ -387,7 +387,7 @@ libgstpbutils-1.0.so.0 libgstreamer-plugins-base1.0-0 #MINVER#
  gst_encoding_container_profile_new@Base 1.0.0
  gst_encoding_list_all_targets@Base 1.0.0
  gst_encoding_list_available_categories@Base 1.0.0
- gst_encoding_profile_copy@Base 1.11.91
+ gst_encoding_profile_copy@Base 1.12.0
  gst_encoding_profile_find@Base 1.0.0
  gst_encoding_profile_from_discoverer@Base 1.0.0
  gst_encoding_profile_get_allow_dynamic_output@Base 1.6.0
@@ -633,10 +633,10 @@ libgstrtp-1.0.so.0 libgstreamer-plugins-base1.0-0 #MINVER#
  gst_rtp_payload_info_for_pt@Base 1.0.0
  gst_rtp_profile_get_type@Base 1.6.0
 libgstrtsp-1.0.so.0 libgstreamer-plugins-base1.0-0 #MINVER#
- gst_rtsp_auth_credential_get_type@Base 1.11.91
- gst_rtsp_auth_credentials_free@Base 1.11.91
+ gst_rtsp_auth_credential_get_type@Base 1.12.0
+ gst_rtsp_auth_credentials_free@Base 1.12.0
  gst_rtsp_auth_method_get_type@Base 1.0.0
- gst_rtsp_auth_param_get_type@Base 1.11.91
+ gst_rtsp_auth_param_get_type@Base 1.12.0
  gst_rtsp_connection_accept@Base 1.0.0
  gst_rtsp_connection_clear_auth_params@Base 1.0.0
  gst_rtsp_connection_close@Base 1.0.0
@@ -691,7 +691,7 @@ libgstrtsp-1.0.so.0 libgstreamer-plugins-base1.0-0 #MINVER#
  gst_rtsp_family_get_type@Base 1.0.0
  gst_rtsp_find_header_field@Base 1.0.0
  gst_rtsp_find_method@Base 1.0.0
- gst_rtsp_generate_digest_auth_response@Base 1.11.91
+ gst_rtsp_generate_digest_auth_response@Base 1.12.0
  gst_rtsp_header_allow_multiple@Base 1.0.0
  gst_rtsp_header_as_text@Base 1.0.0
  gst_rtsp_header_field_get_type@Base 1.0.0
@@ -713,7 +713,7 @@ libgstrtsp-1.0.so.0 libgstreamer-plugins-base1.0-0 #MINVER#
  gst_rtsp_message_new_data@Base 1.0.0
  gst_rtsp_message_new_request@Base 1.0.0
  gst_rtsp_message_new_response@Base 1.0.0
- gst_rtsp_message_parse_auth_credentials@Base 1.11.91
+ gst_rtsp_message_parse_auth_credentials@Base 1.12.0
  gst_rtsp_message_parse_data@Base 1.0.0
  gst_rtsp_message_parse_request@Base 1.0.0
  gst_rtsp_message_parse_response@Base 1.0.0
@@ -1108,7 +1108,7 @@ libgstvideo-1.0.so.0 libgstreamer-plugins-base1.0-0 #MINVER#
  gst_video_decoder_add_to_frame@Base 1.0.0
  gst_video_decoder_allocate_output_buffer@Base 1.0.0
  gst_video_decoder_allocate_output_frame@Base 1.0.0
- gst_video_decoder_allocate_output_frame_with_params@Base 1.11.91
+ gst_video_decoder_allocate_output_frame_with_params@Base 1.12.0
  gst_video_decoder_drop_frame@Base 1.0.0
  gst_video_decoder_finish_frame@Base 1.0.0
  gst_video_decoder_get_allocator@Base 1.0.0
@@ -1168,9 +1168,9 @@ libgstvideo-1.0.so.0 libgstreamer-plugins-base1.0-0 #MINVER#
  gst_video_event_parse_downstream_force_key_unit@Base 1.0.0
  gst_video_event_parse_still_frame@Base 1.0.0
  gst_video_event_parse_upstream_force_key_unit@Base 1.0.0
- gst_video_field_order_from_string@Base 1.11.91
- gst_video_field_order_get_type@Base 1.11.91
- gst_video_field_order_to_string@Base 1.11.91
+ gst_video_field_order_from_string@Base 1.12.0
+ gst_video_field_order_get_type@Base 1.12.0
+ gst_video_field_order_to_string@Base 1.12.0
  gst_video_filter_get_type@Base 1.0.0
  gst_video_flags_get_type@Base 1.0.0
  gst_video_format_flags_get_type@Base 1.0.0
@@ -1293,7 +1293,7 @@ libgstvideo-1.0.so.0 libgstreamer-plugins-base1.0-0 #MINVER#
  gst_video_tile_mode_get_type@Base 1.4.0
  gst_video_tile_type_get_type@Base 1.4.0
  gst_video_time_code_add_frames@Base 1.10.0
- gst_video_time_code_add_interval@Base 1.11.91
+ gst_video_time_code_add_interval@Base 1.12.0
  gst_video_time_code_clear@Base 1.10.0
  gst_video_time_code_compare@Base 1.10.0
  gst_video_time_code_copy@Base 1.10.0
@@ -1302,21 +1302,21 @@ libgstvideo-1.0.so.0 libgstreamer-plugins-base1.0-0 #MINVER#
  gst_video_time_code_get_type@Base 1.10.0
  gst_video_time_code_increment_frame@Base 1.10.0
  gst_video_time_code_init@Base 1.10.0
- gst_video_time_code_init_from_date_time@Base 1.11.91
- gst_video_time_code_interval_clear@Base 1.11.91
- gst_video_time_code_interval_copy@Base 1.11.91
- gst_video_time_code_interval_free@Base 1.11.91
- gst_video_time_code_interval_get_type@Base 1.11.91
- gst_video_time_code_interval_init@Base 1.11.91
- gst_video_time_code_interval_new@Base 1.11.91
- gst_video_time_code_interval_new_from_string@Base 1.11.91
+ gst_video_time_code_init_from_date_time@Base 1.12.0
+ gst_video_time_code_interval_clear@Base 1.12.0
+ gst_video_time_code_interval_copy@Base 1.12.0
+ gst_video_time_code_interval_free@Base 1.12.0
+ gst_video_time_code_interval_get_type@Base 1.12.0
+ gst_video_time_code_interval_init@Base 1.12.0
+ gst_video_time_code_interval_new@Base 1.12.0
+ gst_video_time_code_interval_new_from_string@Base 1.12.0
  gst_video_time_code_is_valid@Base 1.10.0
  gst_video_time_code_meta_api_get_type@Base 1.10.0
  gst_video_time_code_meta_get_info@Base 1.10.0
  gst_video_time_code_new@Base 1.10.0
  gst_video_time_code_new_empty@Base 1.10.0
- gst_video_time_code_new_from_date_time@Base 1.11.91
- gst_video_time_code_new_from_string@Base 1.11.91
+ gst_video_time_code_new_from_date_time@Base 1.12.0
+ gst_video_time_code_new_from_string@Base 1.12.0
  gst_video_time_code_nsec_since_daily_jam@Base 1.10.0
  gst_video_time_code_to_date_time@Base 1.10.0
  gst_video_time_code_to_string@Base 1.10.0
