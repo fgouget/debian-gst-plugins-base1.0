@@ -1,3 +1,11 @@
+gst-plugins-base1.0 (1.12.0-1+ma1) unstable; urgency=medium
+
+  * Improve packaging for cross-compiling.
+    - Move the typelib files to architecture-specific directories
+      and mark gir1.2-gstreamer-1.0 as M-A:same.
+
+ -- Francois Gouget <fgouget@codeweavers.com>  Mon, 08 May 2017 03:14:15 +0100
+
 gst-plugins-base1.0 (1.12.0-1) experimental; urgency=medium
 
   * New upstream stable release

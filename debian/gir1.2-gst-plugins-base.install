@@ -1,2 +1,2 @@
-debian/tmp/usr/lib/*/girepository-* /usr/lib
+usr/lib/*/girepository-*/*.typelib
 
