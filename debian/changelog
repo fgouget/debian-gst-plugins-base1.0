@@ -1,6 +1,6 @@
-gst-plugins-base1.0 (1.12.0-1+ma1) unstable; urgency=medium
+gst-plugins-base1.0 (1.12.0-1+ma1) experimental; urgency=medium
 
-  * Improve packaging for cross-compiling.
+  * Improve packaging for cross-compiling. (Closes: #862119)
     - Move the typelib files to architecture-specific directories
       and mark gir1.2-gstreamer-1.0 as M-A:same.
     - Neither the input nor output of gst-discoverer, gst-play and
@@ -8,6 +8,9 @@ gst-plugins-base1.0 (1.12.0-1+ma1) unstable; urgency=medium
       their operation on architecture-specific plugins but no more so
       for a foreign architecture than for the native one.
       So mark gst-plugins-base-apps as M-A:foreign.
+    - All the files in libgstreamer-plugins-base1.0-dev are either
+      architecture-independent or in architecture-specific folders.
+      So mark libgstreamer-plugins-base1.0-dev as M-A:same.
 
  -- Francois Gouget <fgouget@codeweavers.com>  Mon, 08 May 2017 03:14:15 +0100
 

@@ -74,6 +74,7 @@ Description: GStreamer libraries from the "base" set
 
 Package: @GST_PLUGINS_BASE_LIB_DEV@
 Architecture: any
+Multi-Arch: same
 Section: libdevel
 Depends: ${misc:Depends},
          ${shlibs:Depends},
