@@ -14,6 +14,7 @@ Homepage: http://gstreamer.freedesktop.org/modules/gst-plugins-base.html
 
 Package: @GST_PKGNAME@-plugins-base-apps
 Architecture: any
+Multi-Arch: foreign
 Section: utils
 Depends: ${shlibs:Depends},
          ${misc:Depends},
